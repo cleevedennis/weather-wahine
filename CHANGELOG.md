@@ -25,7 +25,7 @@
 ### Changed
 - Redesigned as a mobile-first weather-app layout, then restyled in pounamu green with kōwhai and kōkōwai accents,
   koru / niho taniwha / poutama motifs and bilingual headings.
-- Beaches limited to the West Coast (Whatipu, Karekare, Piha, Te Henga, Muriwai), ordered from Huia; saved by name.
+- Beaches limited to the West Coast (Whatipu, Karekare, Piha, Te Henga, Muriwai), listed south to north; saved by name.
 - "Sunny" judged on hourly weather within the tide window instead of the day's worst weather.
 - "Beach day" renamed "Tide & sun".
 
