@@ -54,9 +54,11 @@ jobs:
   deploy:
     name: Deploy to GitHub Pages
     needs: test
-    # Publish whatever is on main. Needs Settings → Pages → Source: GitHub Actions (once).
-    # workflow_dispatch covers merges made by the Auto-merge workflow, which starts CI on the base branch afterwards.
-    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref_name == 'main'
+    # Publish from the repository's default branch (GitHub's github-pages environment only accepts that branch).
+    # Deploys start from a manual "Run workflow" or from the Auto-merge workflow after it merges a PR and syncs
+    # the default branch with main — never from ordinary pushes, so unmerged work is never published.
+    # Needs Settings → Pages → Source: GitHub Actions (once).
+    if: github.event_name == 'workflow_dispatch' && github.ref_name == github.event.repository.default_branch
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # Job-level permissions replace the workflow defaults, so read access to the repo must be listed too

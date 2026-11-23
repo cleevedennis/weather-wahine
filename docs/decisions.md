@@ -39,10 +39,13 @@ all network calls; a daily canary checks the real APIs and the LINZ expiry witho
 The calendar export is validated by the Python `icalendar` library, and LINZ handling is back-tested against the raw
 CSVs — so correctness doesn't rest only on our own code's view of itself.
 
-### 10. Deploy from `main`
-`main` holds what's published. Originally the deploy followed the default branch and waited for a `PAGES_ENABLED`
-variable, which kept CI green before Pages was set up but needed three settings changes. It now deploys from `main`
-directly, so the only setting needed is the Pages source.
+### 10. Deploy from the default branch, kept in sync with `main`
+PRs merge into `main`. GitHub's `github-pages` environment only accepts deploys from the repository's default branch,
+and switching the default branch to `main` failed in the GitHub UI. So the deploy runs from whatever the default branch
+is, and the Auto-merge workflow fast-forwards the default branch to `main` after each merge and then starts the
+deploy. Deploys never start from ordinary pushes, so unmerged work isn't published. If the default branch is later
+switched to `main`, this keeps working unchanged. (Earlier versions waited for a `PAGES_ENABLED` variable, then
+deployed from `main` directly; both were blocked by the environment rule.)
 
 ### 11. A Home Screen web app instead of an App Store app
 For personal use, installing from Safari gives an icon, full-screen launch and offline use for free, with no Mac,
