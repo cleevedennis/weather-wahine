@@ -1,0 +1,308 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Weather Wahine</title>
+<style>
+  :root {
+    --bg: #f6f8fa; --card: #ffffff; --text: #1b1f24; --muted: #5b6570; --border: #d8dee4;
+    --tide: #1f6feb; --tide-bg: #ddeafe; --sun: #b35c00; --sun-bg: #ffefd6;
+    --both: #1a7f37; --both-bg: #d7f5df;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #0d1117; --card: #161b22; --text: #e6edf3; --muted: #9aa5b1; --border: #30363d;
+      --tide: #58a6ff; --tide-bg: #0f2a4d; --sun: #f0a43a; --sun-bg: #3d2a0c;
+      --both: #3fb950; --both-bg: #0f3320;
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #0d1117; --card: #161b22; --text: #e6edf3; --muted: #9aa5b1; --border: #30363d;
+    --tide: #58a6ff; --tide-bg: #0f2a4d; --sun: #f0a43a; --sun-bg: #3d2a0c;
+    --both: #3fb950; --both-bg: #0f3320;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--text);
+    font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  main { max-width: 1000px; margin: 0 auto; padding: 20px 16px 48px; }
+  h1 { font-size: 1.6rem; margin: 0 0 4px; }
+  p.sub { color: var(--muted); margin: 0 0 16px; }
+  .controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: end;
+    background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 16px; }
+  .controls label { display: flex; flex-direction: column; font-size: .8rem; color: var(--muted); gap: 4px; }
+  select, input, button { font: inherit; color: var(--text); background: var(--bg);
+    border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; }
+  input[type=number] { width: 7.5em; } input[type=time] { width: 9em; }
+  button { cursor: pointer; background: var(--tide); color: #fff; border-color: transparent; }
+  button.secondary { background: var(--bg); color: var(--text); border-color: var(--border); }
+  .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: .85rem; margin-bottom: 12px; }
+  .legend span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px;
+    margin-right: 6px; vertical-align: -1px; background: var(--c); }
+  #status { color: var(--muted); margin: 8px 0 12px; min-height: 1.4em; }
+  #status.error { color: #cf222e; }
+  .grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
+  .dow { font-size: .75rem; color: var(--muted); text-align: center; text-transform: uppercase; letter-spacing: .04em; }
+  .day { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 6px;
+    min-height: 104px; font-size: .78rem; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+  .day.empty { visibility: hidden; }
+  .day.nodata { opacity: .45; }
+  .day .date { font-weight: 600; font-size: .9rem; display: flex; justify-content: space-between; }
+  .day.tide { border-color: var(--tide); }
+  .day.sun { border-color: var(--sun); }
+  .day.both { border: 2px solid var(--both); background: var(--both-bg); }
+  .tag { border-radius: 4px; padding: 1px 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .tag.t { background: var(--tide-bg); color: var(--tide); }
+  .tag.s { background: var(--sun-bg); color: var(--sun); }
+  .meta { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .star { color: var(--both); }
+  h2 { font-size: 1.1rem; margin: 24px 0 8px; }
+  ul#best { padding-left: 18px; margin: 0; }
+  ul#best li { margin-bottom: 4px; }
+  footer { margin-top: 28px; font-size: .8rem; color: var(--muted); }
+  footer a { color: var(--tide); }
+  @media (max-width: 640px) {
+    .grid { gap: 3px; }
+    .day { min-height: 82px; padding: 3px; font-size: .66rem; }
+    .day .date { font-size: .78rem; }
+    .meta { display: none; }
+  }
+</style>
+</head>
+<body>
+<main>
+  <h1>🌊☀️ Weather Wahine</h1>
+  <p class="sub">West Auckland days with a high tide in your window, and sunny days above your temperature threshold.</p>
+
+  <div class="controls">
+    <label>Beach
+      <select id="loc"></select>
+    </label>
+    <label>Tide window from
+      <input type="time" id="from" value="11:00">
+    </label>
+    <label>to
+      <input type="time" id="to" value="15:00">
+    </label>
+    <label>Min temp (°C)
+      <input type="number" id="minTemp" value="20" step="1">
+    </label>
+    <label>Max rain chance (%)
+      <input type="number" id="maxRain" value="30" step="5" min="0" max="100">
+    </label>
+    <button id="refresh">Update</button>
+    <button id="ics" class="secondary">Download .ics</button>
+  </div>
+
+  <div class="legend">
+    <span style="--c: var(--tide)">High tide in window</span>
+    <span style="--c: var(--sun)">Sunny &amp; warm</span>
+    <span style="--c: var(--both)">Both ★</span>
+  </div>
+
+  <div id="status">Loading forecast…</div>
+  <div class="grid" id="grid"></div>
+
+  <h2>★ Best days (both)</h2>
+  <ul id="best"><li>—</li></ul>
+
+  <footer>
+    Tide times come from the Open-Meteo Marine tidal model (accurate to roughly ±15–30 min); check
+    <a href="https://www.linz.govt.nz/products-services/tides-and-tidal-streams/tide-predictions" target="_blank" rel="noopener">LINZ tide tables</a>
+    before you go. Weather forecasts are less reliable beyond about 7 days. “Sunny” means clear, mainly clear or partly cloudy
+    (WMO code 0–2), max temperature at or above your threshold, and rain chance at or below your limit.
+    Data: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (CC BY 4.0).
+  </footer>
+</main>
+
+<script>
+const LOCATIONS = [
+  { name: "Piha", lat: -36.954, lon: 174.469 },
+  { name: "Karekare", lat: -36.988, lon: 174.476 },
+  { name: "Te Henga / Bethells", lat: -36.887, lon: 174.442 },
+  { name: "Muriwai", lat: -36.829, lon: 174.424 },
+  { name: "Whatipu", lat: -37.044, lon: 174.507 },
+  { name: "Te Atatū (Waitematā Harbour)", lat: -36.835, lon: 174.640 },
+];
+const TZ = "Pacific/Auckland";
+const DAYS = 16;
+const WMO = { 0: "Clear", 1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast", 45: "Fog", 48: "Fog",
+  51: "Drizzle", 53: "Drizzle", 55: "Drizzle", 61: "Rain", 63: "Rain", 65: "Heavy rain",
+  80: "Showers", 81: "Showers", 82: "Heavy showers", 95: "Thunder", 96: "Thunder", 99: "Thunder" };
+
+const $ = (id) => document.getElementById(id);
+let lastResult = [];
+
+function savePrefs() {
+  try {
+    localStorage.setItem("ww-prefs", JSON.stringify({
+      loc: $("loc").value, from: $("from").value, to: $("to").value,
+      minTemp: $("minTemp").value, maxRain: $("maxRain").value }));
+  } catch (e) {}
+}
+function loadPrefs() {
+  try {
+    const p = JSON.parse(localStorage.getItem("ww-prefs") || "null");
+    if (p) for (const k of ["loc", "from", "to", "minTemp", "maxRain"]) if (p[k] != null) $(k).value = p[k];
+  } catch (e) {}
+}
+
+const toMin = (hhmm) => { const [h, m] = hhmm.split(":").map(Number); return h * 60 + m; };
+const fmtTime = (mins) => {
+  mins = Math.round(mins);
+  const h = Math.floor(mins / 60), m = mins % 60;
+  const ap = h >= 12 ? "pm" : "am", h12 = ((h + 11) % 12) + 1;
+  return `${h12}:${String(m).padStart(2, "0")}${ap}`;
+};
+
+// Find high tides as local maxima of hourly sea level, refined with a parabola through the 3 points.
+function findHighTides(times, levels) {
+  const out = [];
+  for (let i = 1; i < levels.length - 1; i++) {
+    const a = levels[i - 1], b = levels[i], c = levels[i + 1];
+    if (a == null || b == null || c == null) continue;
+    if (b > a && b >= c) {
+      const denom = a - 2 * b + c;
+      const offset = denom !== 0 ? 0.5 * (a - c) / denom : 0; // hours, in [-0.5, 0.5]
+      const [date, hm] = times[i].split("T");
+      let mins = toMin(hm) + offset * 60;
+      let d = date;
+      if (mins < 0 || mins >= 1440) { // spills into neighbouring day
+        const dt = new Date(date + "T00:00:00Z"); dt.setUTCDate(dt.getUTCDate() + (mins < 0 ? -1 : 1));
+        d = dt.toISOString().slice(0, 10); mins = (mins + 1440) % 1440;
+      }
+      out.push({ date: d, mins, height: b - denom * offset * offset / 4 });
+    }
+  }
+  return out;
+}
+
+async function fetchData(loc) {
+  const common = `latitude=${loc.lat}&longitude=${loc.lon}&timezone=${encodeURIComponent(TZ)}&forecast_days=${DAYS}`;
+  const [marine, weather] = await Promise.all([
+    fetch(`https://marine-api.open-meteo.com/v1/marine?${common}&hourly=sea_level_height_msl&cell_selection=sea`),
+    fetch(`https://api.open-meteo.com/v1/forecast?${common}&daily=weather_code,temperature_2m_max,precipitation_probability_max,sunshine_duration`),
+  ]);
+  if (!marine.ok) throw new Error(`Tide data request failed (${marine.status})`);
+  if (!weather.ok) throw new Error(`Weather request failed (${weather.status})`);
+  return { marine: await marine.json(), weather: await weather.json() };
+}
+
+function analyse({ marine, weather }) {
+  const from = toMin($("from").value || "11:00"), to = toMin($("to").value || "15:00");
+  const minTemp = Number($("minTemp").value), maxRain = Number($("maxRain").value);
+  const tides = findHighTides(marine.hourly.time, marine.hourly.sea_level_height_msl);
+  const d = weather.daily;
+  return d.time.map((date, i) => {
+    const highs = tides.filter((t) => t.date === date);
+    const inWindow = highs.filter((t) => t.mins >= from && t.mins <= to);
+    const code = d.weather_code[i], tmax = d.temperature_2m_max[i];
+    const rain = d.precipitation_probability_max?.[i];
+    const sunH = d.sunshine_duration?.[i] != null ? d.sunshine_duration[i] / 3600 : null;
+    const hasWeather = code != null && tmax != null;
+    const sunny = hasWeather && code <= 2 && tmax >= minTemp && (rain == null || rain <= maxRain);
+    return { date, highs, inWindow, tide: inWindow.length > 0, sunny, code, tmax, rain, sunH, hasWeather };
+  });
+}
+
+function render(days) {
+  const grid = $("grid"); grid.innerHTML = "";
+  for (const n of ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]) {
+    const el = document.createElement("div"); el.className = "dow"; el.textContent = n; grid.appendChild(el);
+  }
+  const first = new Date(days[0].date + "T12:00:00Z");
+  const lead = (first.getUTCDay() + 6) % 7;
+  for (let i = 0; i < lead; i++) { const e = document.createElement("div"); e.className = "day empty"; grid.appendChild(e); }
+
+  for (const day of days) {
+    const dt = new Date(day.date + "T12:00:00Z");
+    const el = document.createElement("div");
+    el.className = "day" + (day.tide && day.sunny ? " both" : day.tide ? " tide" : day.sunny ? " sun" : "")
+      + (!day.hasWeather && !day.highs.length ? " nodata" : "");
+    const label = dt.toLocaleDateString("en-NZ", { day: "numeric", month: "short", timeZone: "UTC" });
+    let html = `<div class="date"><span>${label}</span>${day.tide && day.sunny ? '<span class="star">★</span>' : ""}</div>`;
+    if (day.tide) html += day.inWindow.map((t) => `<div class="tag t">🌊 High ${fmtTime(t.mins)}</div>`).join("");
+    if (day.sunny) html += `<div class="tag s">☀️ ${Math.round(day.tmax)}°</div>`;
+    const otherHighs = day.highs.filter((t) => !day.inWindow.includes(t)).map((t) => fmtTime(t.mins));
+    if (otherHighs.length) html += `<div class="meta">Highs: ${otherHighs.join(", ")}</div>`;
+    if (day.hasWeather && !day.sunny) html += `<div class="meta">${WMO[day.code] || "Code " + day.code}, ${Math.round(day.tmax)}°${day.rain != null ? `, ${day.rain}% rain` : ""}</div>`;
+    if (!day.hasWeather) html += `<div class="meta">No weather yet</div>`;
+    el.innerHTML = html;
+    el.title = [`${day.date}`, day.highs.length ? `High tides: ${day.highs.map((t) => fmtTime(t.mins)).join(", ")}` : "No tide data",
+      day.hasWeather ? `${WMO[day.code] || day.code}, max ${day.tmax}°C, rain ${day.rain ?? "?"}%, sun ${day.sunH?.toFixed(1) ?? "?"}h` : ""].join("\n");
+    grid.appendChild(el);
+  }
+
+  const best = days.filter((d) => d.tide && d.sunny);
+  $("best").innerHTML = best.length
+    ? best.map((d) => {
+        const dt = new Date(d.date + "T12:00:00Z");
+        const name = dt.toLocaleDateString("en-NZ", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
+        return `<li><strong>${name}</strong> — high tide ${d.inWindow.map((t) => fmtTime(t.mins)).join(" & ")}, ${WMO[d.code]}, ${Math.round(d.tmax)}°C</li>`;
+      }).join("")
+    : "<li>No days match both conditions in the forecast range.</li>";
+}
+
+function toICS(days, locName) {
+  const pad = (n) => String(n).padStart(2, "0");
+  const stamp = new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z";
+  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Weather Wahine//EN", "CALSCALE:GREGORIAN",
+    `X-WR-CALNAME:Weather Wahine – ${locName}`];
+  for (const d of days) {
+    if (!d.tide && !d.sunny) continue;
+    const ymd = d.date.replace(/-/g, "");
+    const parts = [];
+    if (d.tide) parts.push(`High tide ${d.inWindow.map((t) => fmtTime(t.mins)).join(" & ")}`);
+    if (d.sunny) parts.push(`Sunny ${Math.round(d.tmax)}°C`);
+    const summary = (d.tide && d.sunny ? "★ " : d.tide ? "🌊 " : "☀️ ") + parts.join(" · ") + ` (${locName})`;
+    lines.push("BEGIN:VEVENT", `UID:${ymd}-${locName.replace(/\W+/g, "")}@weather-wahine`, `DTSTAMP:${stamp}`);
+    if (d.tide) {
+      const t = d.inWindow[0], s = Math.max(0, t.mins - 60), e = Math.min(1439, t.mins + 60);
+      lines.push(`DTSTART;TZID=${TZ}:${ymd}T${pad(Math.floor(s / 60))}${pad(Math.round(s % 60))}00`,
+                 `DTEND;TZID=${TZ}:${ymd}T${pad(Math.floor(e / 60))}${pad(Math.round(e % 60))}00`);
+    } else {
+      const next = new Date(d.date + "T00:00:00Z"); next.setUTCDate(next.getUTCDate() + 1);
+      lines.push(`DTSTART;VALUE=DATE:${ymd}`, `DTEND;VALUE=DATE:${next.toISOString().slice(0, 10).replace(/-/g, "")}`);
+    }
+    lines.push(`SUMMARY:${summary}`, "TRANSP:TRANSPARENT", "END:VEVENT");
+  }
+  lines.push("END:VCALENDAR");
+  return lines.join("\r\n");
+}
+
+let cache = { key: null, data: null };
+async function update(force) {
+  const loc = LOCATIONS[Number($("loc").value)] || LOCATIONS[0];
+  savePrefs();
+  const st = $("status"); st.className = "";
+  try {
+    if (force || cache.key !== loc.name) {
+      st.textContent = `Loading forecast for ${loc.name}…`;
+      cache = { key: loc.name, data: await fetchData(loc) };
+    }
+    lastResult = analyse(cache.data);
+    render(lastResult);
+    const n = lastResult.filter((d) => d.tide && d.sunny).length;
+    st.textContent = `${loc.name}: next ${lastResult.length} days · ${n} day${n === 1 ? "" : "s"} with both. Updated ${new Date().toLocaleTimeString("en-NZ", { hour: "numeric", minute: "2-digit" })}.`;
+  } catch (e) {
+    st.className = "error"; st.textContent = `Couldn't load the forecast: ${e.message}. Check your connection and try again.`;
+  }
+}
+
+LOCATIONS.forEach((l, i) => { const o = document.createElement("option"); o.value = i; o.textContent = l.name; $("loc").appendChild(o); });
+loadPrefs();
+$("loc").addEventListener("change", () => update(false));
+for (const id of ["from", "to", "minTemp", "maxRain"]) $(id).addEventListener("change", () => update(false));
+$("refresh").addEventListener("click", () => update(true));
+$("ics").addEventListener("click", () => {
+  if (!lastResult.length) return;
+  const loc = LOCATIONS[Number($("loc").value)] || LOCATIONS[0];
+  const blob = new Blob([toICS(lastResult, loc.name)], { type: "text/calendar" });
+  const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+  a.download = `weather-wahine-${loc.name.split(" ")[0].toLowerCase()}.ics`; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+update(false);
+</script>
+</body>
+</html>
