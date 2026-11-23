@@ -8,6 +8,15 @@ updates:
     groups:
       actions:
         patterns: ["*"]
+    # The Pages actions must be upgraded together and tested with a real deploy
+    # (upload-pages-artifact v5 + deploy-pages v5 failed to find the artifact). Only take minor/patch updates.
+    ignore:
+      - dependency-name: "actions/configure-pages"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "actions/upload-pages-artifact"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "actions/deploy-pages"
+        update-types: ["version-update:semver-major"]
   - package-ecosystem: npm
     directory: /
     target-branch: main

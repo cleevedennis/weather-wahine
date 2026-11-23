@@ -65,6 +65,7 @@ jobs:
     # (without it, checkout of this private repo fails with "Repository not found").
     permissions:
       contents: read
+      actions: read      # lets deploy-pages look up the uploaded site artifact
       pages: write
       id-token: write
     environment:
@@ -77,10 +78,11 @@ jobs:
       - uses: actions/checkout@v7
       - name: Assemble site (only the files the page needs)
         run: mkdir _site && cp -r index.html tides-data.js manifest.webmanifest sw.js icons _site/
-      - uses: actions/configure-pages@v6
-      - uses: actions/upload-pages-artifact@v5
+      # Pinned to the standard, proven trio; Dependabot skips their major updates (see .github/dependabot.yml).
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
       - id: deploy
-        uses: actions/deploy-pages@v5
+        uses: actions/deploy-pages@v4
       - name: Smoke-check the live site
         run: |
           url="${{ steps.deploy.outputs.page_url }}"
