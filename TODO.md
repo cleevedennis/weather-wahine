@@ -17,9 +17,10 @@
 - [ ] Optional: tune the 2.5 m swell threshold (`BIG_SWELL_M` in index.html) to what you're comfortable with.
 
 ## CI/CD (one-time, repo owner)
+- [ ] Merge PR #3 into `main`, then Settings → General → Default branch: `main`
 - [ ] Settings → Pages → Source: GitHub Actions
 - [ ] Settings → Secrets and variables → Actions → Variables: `PAGES_ENABLED` = `true`
-- [ ] Settings → Branches: require the "Offline test gate" check on the default branch
+- [ ] Settings → Branches: protect `main`, require the "Offline test gate" check
 
 ## Later
 - [ ] Before end of 2027: add Onehunga 2028 LINZ table (steps in README). The daily canary will warn 90 days ahead.
