@@ -59,7 +59,10 @@ jobs:
     if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref_name == 'main'
     runs-on: ubuntu-latest
     timeout-minutes: 10
+    # Job-level permissions replace the workflow defaults, so read access to the repo must be listed too
+    # (without it, checkout of this private repo fails with "Repository not found").
     permissions:
+      contents: read
       pages: write
       id-token: write
     environment:

@@ -11,7 +11,8 @@
 | **Dependabot** | `.github/dependabot.yml` | Monthly | Grouped PRs (into `main`) for GitHub Actions and npm test tools | — |
 
 Concurrency: CI cancels superseded runs on the same ref; deploys never cancel each other.
-Permissions: workflows default to `contents: read`; only the deploy job gets `pages: write` and `id-token: write`.
+Permissions: workflows default to `contents: read`; the deploy job adds `pages: write` and `id-token: write` (and repeats
+`contents: read`, because job-level permissions replace the defaults).
 
 ## Merge policy
 
