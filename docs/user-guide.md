@@ -2,7 +2,7 @@
 
 ## Choosing a beach
 
-Tap the beach name at the top to switch. Beaches are listed roughly in driving order from Huia:
+Tap the beach name at the top to switch. Beaches are listed south to north:
 
 | Beach | Tide source today |
 |---|---|

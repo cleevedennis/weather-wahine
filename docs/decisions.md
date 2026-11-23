@@ -9,8 +9,8 @@ upgrade. Trade-off: all code is in one file.
 ### 2. Open-Meteo for weather, swell and model tides
 Free, no API key, sends CORS headers so the browser can call it directly, and has hourly forecasts plus a marine API.
 
-### 3. Scope to West Coast beaches, ordered from Huia
-The user lives in Huia and goes to the West Coast. Te Atatū (Waitematā) was removed. Beaches are saved by name so
+### 3. Scope to West Coast beaches, listed south to north
+The app is for West Coast beach trips. Te Atatū (Waitematā) was removed. Beaches are saved by name so
 reordering doesn't change someone's saved choice.
 
 ### 4. Bundle LINZ tables instead of fetching them
