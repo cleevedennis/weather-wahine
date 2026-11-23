@@ -51,8 +51,8 @@ jobs:
           path: playwright-report
           retention-days: 14
 
-  deploy:
-    name: Deploy to GitHub Pages
+  pages-build:
+    name: Build site for GitHub Pages
     needs: test
     # Publish from the repository's default branch (GitHub's github-pages environment only accepts that branch).
     # Deploys start from a manual "Run workflow" or from the Auto-merge workflow after it merges a PR and syncs
@@ -62,9 +62,26 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     # Job-level permissions replace the workflow defaults, so read access to the repo must be listed too
-    # (without it, checkout of this private repo fails with "Repository not found").
+    # (without it, checkout of a private repo fails with "Repository not found").
     permissions:
       contents: read
+      pages: write
+    steps:
+      - uses: actions/checkout@v7
+      - name: Assemble site (only the files the page needs)
+        run: mkdir _site && cp -r index.html tides-data.js manifest.webmanifest sw.js icons _site/
+      # Pinned to the standard, proven trio; Dependabot skips their major updates (see .github/dependabot.yml).
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+
+  deploy:
+    name: Deploy to GitHub Pages
+    # A separate job, as in GitHub's own Pages template: deploying in the same job as the upload raced
+    # ("No artifacts named github-pages were found" moments after a successful upload).
+    needs: pages-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
       actions: read      # lets deploy-pages look up the uploaded site artifact
       pages: write
       id-token: write
@@ -75,12 +92,6 @@ jobs:
       group: pages
       cancel-in-progress: false
     steps:
-      - uses: actions/checkout@v7
-      - name: Assemble site (only the files the page needs)
-        run: mkdir _site && cp -r index.html tides-data.js manifest.webmanifest sw.js icons _site/
-      # Pinned to the standard, proven trio; Dependabot skips their major updates (see .github/dependabot.yml).
-      - uses: actions/configure-pages@v5
-      - uses: actions/upload-pages-artifact@v3
       - id: deploy
         uses: actions/deploy-pages@v4
       - name: Smoke-check the live site
