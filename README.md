@@ -1,18 +1,63 @@
 # Weather Wahine
 
-A single-page calendar for West Auckland beaches that highlights:
+A single-page calendar for West Auckland's West Coast beaches that shows, for the next 16 days:
 
-- 🌊 **High tides between 11am and 3pm** (window is adjustable)
-- ☀️ **Sunny days at 20°C or warmer** (clear / mainly clear / partly cloudy, low rain chance)
-- ★ **Days with both**
+- 🌊 **High tides inside your window** (default 11am–3pm)
+- ☀️ **Sunny, warm weather during that window** (default 20°C+, rain chance 30% or less)
+- ★ **"Tide & sun" days** when both line up
+- ⚠️ **Big swell warnings** (2.5 m+ waves)
 
-Covers the next 16 days for Piha, Karekare, Te Henga/Bethells, Muriwai, Whatipu and Te Atatū.
-You can download the matching days as an `.ics` file to import into Outlook, Google or Apple Calendar.
+Beaches: **Whatipu, Karekare, Piha, Te Henga (Bethells), Muriwai**, plus **Huia Bay** once its official LINZ tide
+offset is entered. Matching days can be downloaded as an `.ics` file for Outlook, Google or Apple Calendar.
 
-## Use it
+> ★ means the tide and sun line up — **not** that it's safe to swim. West Coast beaches have strong rips and big surf.
+> Swim between the flags at patrolled beaches and check [Safeswim](https://safeswim.org.nz/).
 
-Open `index.html` in a browser, or turn on GitHub Pages for this repo (Settings → Pages → deploy from branch).
-No API key needed — data comes from [Open-Meteo](https://open-meteo.com/) (weather + marine tide model).
+## Quick start
 
-Tide times are model estimates (roughly ±15–30 min). Check the official
-[LINZ tide predictions](https://www.linz.govt.nz/products-services/tides-and-tidal-streams/tide-predictions) before heading out.
+- **Use it:** open `index.html` in a browser (works straight from disk), or use the GitHub Pages link once deploys
+  are switched on ([operations guide](docs/operations.md#one-time-setup-repo-owner)).
+- **On an iPhone:** open the page in Safari → Share → **Add to Home Screen**.
+- No accounts or API keys. Weather and swell come from [Open-Meteo](https://open-meteo.com/); tides from the Open-Meteo
+  tide model or official [LINZ](https://www.linz.govt.nz/products-services/tides-and-tidal-streams/tide-predictions) tables.
+
+## Documentation
+
+| Guide | For |
+|---|---|
+| [User guide](docs/user-guide.md) | Using the page: beaches, settings, reading the screen, calendar export, safety |
+| [Architecture](docs/architecture.md) | How the page works: files, data flow, rules, key functions, configuration |
+| [Tides](docs/tides.md) | Tide sources, measured accuracy, LINZ integration, adding a beach, yearly data refresh |
+| [Testing](docs/testing.md) | Test suites, how to run them, what they cover, adding tests |
+| [Operations](docs/operations.md) | CI/CD workflows, deploys, one-time GitHub setup, runbook, environment |
+| [Design](docs/design.md) | Colours, Māori motifs and te reo, accessibility |
+| [Decisions](docs/decisions.md) | Why things are built the way they are |
+| [Changelog](CHANGELOG.md) | What changed and when |
+| [To do](TODO.md) | Outstanding tasks |
+
+## Repository layout
+
+```
+index.html               The whole app: markup, styles and script
+tides-data.js            Bundled LINZ tide predictions (generated — do not edit by hand)
+data/                    Raw LINZ CSVs the bundle is built from
+tools/                   linz_to_js.py (build tides-data.js), check_tide_data.py, validate_ics.py
+tests/                   Playwright tests (offline gate + live canary)
+.github/                 CI, live canary and Dependabot configuration
+docs/                    Documentation
+```
+
+## Developing
+
+```bash
+npm ci && npx playwright install chromium
+npm run serve         # http://127.0.0.1:4173/index.html
+npm test              # offline test gate (what CI runs)
+```
+
+See [Testing](docs/testing.md) for the full set of checks.
+
+## Credits & licences
+
+- Weather, swell and model tides: [Open-Meteo](https://open-meteo.com/) (CC BY 4.0)
+- Tide predictions: © Toitū Te Whenua Land Information New Zealand (CC BY 4.0)

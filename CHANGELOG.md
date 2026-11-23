@@ -1,0 +1,26 @@
+# Changelog
+
+## 2026-11-23
+
+### Added
+- Calendar of high tides in a time window and sunny days, with `.ics` export (first version).
+- Official LINZ tide predictions (Onehunga 2026–2027) with per-beach secondary-port offsets; Huia Bay (shown once
+  its offset is set); tide source shown under the tide chart.
+- Swell height from Open-Meteo Marine, with a warning at 2.5 m+; Safeswim safety note.
+- CI/CD: offline Playwright test gate, independent iCalendar validation, daily live canary with LINZ expiry warning,
+  GitHub Pages deploy from the default branch, Dependabot.
+- Documentation in `docs/`, `TODO.md` and this changelog.
+
+### Changed
+- Redesigned as a mobile-first weather-app layout, then restyled in pounamu green with kōwhai and kōkōwai accents,
+  koru / niho taniwha / poutama motifs and bilingual headings.
+- Beaches limited to the West Coast (Whatipu, Karekare, Piha, Te Henga, Muriwai), ordered from Huia; saved by name.
+- "Sunny" judged on hourly weather within the tide window instead of the day's worst weather.
+- "Beach day" renamed "Tide & sun".
+
+### Fixed
+- Notice when the model tide forecast ends (~9 days) instead of silently skipping later days.
+- Accessibility: contrast, page heading, keyboard access to days.
+- `.ics`: `VTIMEZONE` for Pacific/Auckland; long lines folded to 75 bytes.
+- Sky gradient hidden behind the page background.
+- Empty or reversed settings; stale "Today" when a home-screen app resumes.

@@ -2,160 +2,303 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0d3b2e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Weather Wahine</title>
 <style>
   :root {
-    --bg: #f6f8fa; --card: #ffffff; --text: #1b1f24; --muted: #5b6570; --border: #d8dee4;
-    --tide: #1f6feb; --tide-bg: #ddeafe; --sun: #b35c00; --sun-bg: #ffefd6;
-    --both: #1a7f37; --both-bg: #d7f5df;
+    --sky-a: #0d3b2e; --sky-b: #2e7d5b;
+    --glass: rgba(4, 24, 18, 0.32);
+    --bone: #f3ead8; --kokowai: #d9734a;
+    --glass-strong: rgba(255, 255, 255, 0.22);
+    --line: rgba(255, 255, 255, 0.18);
+    --text: #ffffff; --muted: rgba(255, 255, 255, 0.82);
+    --tide: #6fd6cf; --sun: #f2c94c; --both: #ef8d5f;
   }
-  @media (prefers-color-scheme: dark) {
-    :root:not([data-theme="light"]) {
-      --bg: #0d1117; --card: #161b22; --text: #e6edf3; --muted: #9aa5b1; --border: #30363d;
-      --tide: #58a6ff; --tide-bg: #0f2a4d; --sun: #f0a43a; --sun-bg: #3d2a0c;
-      --both: #3fb950; --both-bg: #0f3320;
-    }
+  body[data-sky="clear"]    { --sky-a: #0b3a2c; --sky-b: #2f7f5c; }
+  body[data-sky="partly"]   { --sky-a: #0f3830; --sky-b: #3d6e5e; }
+  body[data-sky="overcast"] { --sky-a: #17282a; --sky-b: #46584f; }
+  body[data-sky="rain"]     { --sky-a: #0e1d1b; --sky-b: #324540; }
+  body[data-sky="storm"]    { --sky-a: #091210; --sky-b: #26332e; }
+
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html { background: #0b2a21; }
+  body {
+    margin: 0; min-height: 100vh; color: var(--text);
+    background: transparent;
+    font: 16px/1.35 -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, "Helvetica Neue", sans-serif;
+    -webkit-font-smoothing: antialiased;
   }
-  :root[data-theme="dark"] {
-    --bg: #0d1117; --card: #161b22; --text: #e6edf3; --muted: #9aa5b1; --border: #30363d;
-    --tide: #58a6ff; --tide-bg: #0f2a4d; --sun: #f0a43a; --sun-bg: #3d2a0c;
-    --both: #3fb950; --both-bg: #0f3320;
+  body::before { content: ""; position: fixed; inset: 0; z-index: -1;
+    background: linear-gradient(180deg, var(--sky-a) 0%, var(--sky-b) 100%); }
+  body::after { content: ""; position: fixed; z-index: -1; pointer-events: none; width: 340px; height: 340px;
+    top: 10px; right: -130px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 300' fill='none' stroke='%23f3ead8' stroke-linecap='round'%3E%3Cpath stroke-width='11' d='M40 300C40 185 95 105 185 105C250 105 272 170 236 197C205 220 170 196 186 170C197 152 222 158 217 176'/%3E%3Cpath stroke-width='7' d='M120 300C122 245 150 205 196 205C228 205 240 236 222 250C207 261 190 249 198 236'/%3E%3C/svg%3E") no-repeat center / contain; opacity: .08; }
+  .poutama { height: 12px; background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='12'%3E%3Cpath d='M0 12V9H3V6H6V3H9V0H12V3H15V6H18V9H21V12Z' fill='%23d9734a'/%3E%3C/svg%3E") repeat-x left center / 24px 12px; opacity: .7; }
+  .brand { text-align: center; font-size: .7rem; font-weight: 700; letter-spacing: .32em; text-transform: uppercase;
+    color: var(--bone); opacity: .85; margin: 10px 0 0; }
+  main { max-width: 560px; margin: 0 auto; padding: max(28px, env(safe-area-inset-top)) 16px 48px; }
+
+  /* Hero */
+  .hero { text-align: center; padding: 10px 0 26px; text-shadow: 0 1px 8px rgba(0,0,0,.12); }
+  .loc-wrap { position: relative; display: inline-flex; align-items: center; gap: 6px; }
+  .loc-wrap select {
+    appearance: none; -webkit-appearance: none; background: transparent; border: 0; color: inherit;
+    font: 400 2rem/1.1 inherit; font-family: inherit; text-align: center; text-align-last: center;
+    cursor: pointer; padding: 0 22px 0 0; max-width: 85vw;
   }
-  * { box-sizing: border-box; }
-  body { margin: 0; background: var(--bg); color: var(--text);
-    font: 15px/1.45 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
-  main { max-width: 1000px; margin: 0 auto; padding: 20px 16px 48px; }
-  h1 { font-size: 1.6rem; margin: 0 0 4px; }
-  p.sub { color: var(--muted); margin: 0 0 16px; }
-  .controls { display: flex; flex-wrap: wrap; gap: 12px; align-items: end;
-    background: var(--card); border: 1px solid var(--border); border-radius: 10px; padding: 12px; margin-bottom: 16px; }
-  .controls label { display: flex; flex-direction: column; font-size: .8rem; color: var(--muted); gap: 4px; }
-  select, input, button { font: inherit; color: var(--text); background: var(--bg);
-    border: 1px solid var(--border); border-radius: 6px; padding: 6px 8px; }
-  input[type=number] { width: 7.5em; } input[type=time] { width: 9em; }
-  button { cursor: pointer; background: var(--tide); color: #fff; border-color: transparent; }
-  button.secondary { background: var(--bg); color: var(--text); border-color: var(--border); }
-  .legend { display: flex; flex-wrap: wrap; gap: 14px; font-size: .85rem; margin-bottom: 12px; }
-  .legend span::before { content: ""; display: inline-block; width: 12px; height: 12px; border-radius: 3px;
-    margin-right: 6px; vertical-align: -1px; background: var(--c); }
-  #status { color: var(--muted); margin: 8px 0 12px; min-height: 1.4em; }
-  #status.error { color: #cf222e; }
-  .grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; }
-  .dow { font-size: .75rem; color: var(--muted); text-align: center; text-transform: uppercase; letter-spacing: .04em; }
-  .day { background: var(--card); border: 1px solid var(--border); border-radius: 8px; padding: 6px;
-    min-height: 104px; font-size: .78rem; display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-  .day.empty { visibility: hidden; }
-  .day.nodata { opacity: .45; }
-  .day .date { font-weight: 600; font-size: .9rem; display: flex; justify-content: space-between; }
-  .day.tide { border-color: var(--tide); }
-  .day.sun { border-color: var(--sun); }
-  .day.both { border: 2px solid var(--both); background: var(--both-bg); }
-  .tag { border-radius: 4px; padding: 1px 4px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .tag.t { background: var(--tide-bg); color: var(--tide); }
-  .tag.s { background: var(--sun-bg); color: var(--sun); }
-  .meta { color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .star { color: var(--both); }
-  h2 { font-size: 1.1rem; margin: 24px 0 8px; }
-  ul#best { padding-left: 18px; margin: 0; }
-  ul#best li { margin-bottom: 4px; }
-  footer { margin-top: 28px; font-size: .8rem; color: var(--muted); }
-  footer a { color: var(--tide); }
-  @media (max-width: 640px) {
-    .grid { gap: 3px; }
-    .day { min-height: 82px; padding: 3px; font-size: .66rem; }
-    .day .date { font-size: .78rem; }
-    .meta { display: none; }
+  .loc-wrap select option { color: #000; font-size: 1rem; }
+  .loc-wrap::after { content: "⌄"; position: absolute; right: 2px; top: -4px; font-size: 1.1rem; opacity: .7; pointer-events: none; }
+  .hero .day-label { font-size: .9rem; color: var(--muted); margin-top: 4px; letter-spacing: .02em; }
+  .hero .temp { font-size: 6rem; font-weight: 200; line-height: 1; margin: 4px 0 2px; letter-spacing: -.03em; padding-left: .25em; }
+  .hero .cond { font-size: 1.25rem; font-weight: 500; }
+  .hero .hl { font-size: 1.1rem; font-weight: 500; margin-top: 2px; }
+  .badges { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 14px; min-height: 30px; }
+  .badge { background: var(--glass); backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5);
+    border-radius: 999px; padding: 5px 12px; font-size: .85rem; font-weight: 500; }
+  .badge.both { background: rgba(150, 58, 28, .6); }
+  .badge.warn { background: rgba(160, 30, 20, .65); }
+  .hero .cond .win { font-size: .8rem; font-weight: 500; color: var(--muted); margin-left: 4px; }
+  .warn-text { color: #ffb8a3; font-weight: 600; white-space: nowrap; }
+  .notice.safety a { color: var(--bone); }
+
+  /* Glass cards */
+  .card {
+    background: var(--glass); border-radius: 18px; margin-bottom: 12px; padding: 12px 16px 14px;
+    backdrop-filter: blur(24px) saturate(1.15); -webkit-backdrop-filter: blur(24px) saturate(1.15);
+    box-shadow: inset 0 0 0 0.5px rgba(243,234,216,.14);
   }
+  .card-h { display: flex; align-items: center; gap: 6px; font-size: .75rem; font-weight: 600; letter-spacing: .06em;
+    text-transform: uppercase; color: var(--muted); padding-bottom: 11px; margin-bottom: 8px; position: relative; }
+  .card-h::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 5px;
+    background: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='7'%3E%3Cpath d='M0 7L4 0L8 7Z' fill='%23d9734a'/%3E%3Cpath d='M8 7L12 0L16 7Z' fill='%23f3ead8' fill-opacity='.55'/%3E%3C/svg%3E") repeat-x left bottom / 11px 5px; opacity: .6; }
+  .card-h .en { opacity: .65; font-weight: 500; }
+  .card-h .right { margin-left: auto; text-transform: none; letter-spacing: 0; font-weight: 500; }
+  .summary-text { font-size: .95rem; padding: 2px 0 10px; border-bottom: 0.5px solid var(--line); margin-bottom: 6px; }
+
+  /* Best days */
+  .best-row { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 0.5px solid var(--line); cursor: pointer; }
+  .best-row:last-child { border-bottom: 0; }
+  .best-row .when { font-weight: 600; min-width: 92px; }
+  .best-row .what { color: var(--muted); font-size: .9rem; flex: 1; }
+  .best-row .t { font-weight: 600; }
+  .empty-note { color: var(--muted); font-size: .9rem; padding: 6px 0 2px; }
+
+  /* Tide chart */
+  .tide-svg { width: 100%; height: auto; display: block; overflow: visible; }
+  .tide-svg text { fill: var(--muted); font-size: 10px; font-family: inherit; }
+  .tide-svg .hl-label { fill: #fff; font-size: 11px; font-weight: 600; }
+  .tide-foot { display: flex; justify-content: space-between; font-size: .85rem; color: var(--muted); margin-top: 6px; }
+
+  /* Calendar */
+  .cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; text-align: center; }
+  .cal .dow { font-size: .7rem; color: var(--muted); font-weight: 600; padding: 2px 0 4px; }
+  .cal .cell { border-radius: 12px; padding: 6px 0 5px; cursor: pointer; position: relative; transition: background .15s; }
+  .cal .cell:hover { background: rgba(255,255,255,.08); }
+  .cal .cell.blank { visibility: hidden; }
+  .cal .num { font-size: .95rem; font-weight: 500; }
+  .cal .mon { font-size: .6rem; color: var(--muted); display: block; height: .8rem; line-height: .8rem; }
+  .cal .dots { display: flex; justify-content: center; gap: 3px; height: 7px; margin-top: 3px; }
+  .cal .dot { width: 6px; height: 6px; border-radius: 50%; }
+  .dot.t { background: var(--tide); } .dot.s { background: var(--sun); }
+  .cal .cell.both { background: rgba(217, 115, 74, .22); box-shadow: inset 0 0 0 1.5px var(--both); }
+  .cal .cell.sel { background: var(--bone); color: #0b3a2c; }
+  .cal .cell.sel .mon { color: rgba(11,58,44,.85); }
+  .cal .cell.sel .dot.t { background: #13877f; } .cal .cell.sel .dot.s { background: #a87b00; }
+  .legend { display: flex; justify-content: center; gap: 14px; font-size: .75rem; color: var(--muted); margin-top: 10px; }
+  .legend i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; }
+
+  /* 16-day list */
+  .row { display: grid; grid-template-columns: 50px 30px 34px 1fr 34px; align-items: center; gap: 8px;
+    padding: 9px 0; border-bottom: 0.5px solid var(--line); cursor: pointer; }
+  .row:last-child { border-bottom: 0; }
+  .row .dname { font-weight: 600; font-size: 1.05rem; }
+  .row .ico { font-size: 1.3rem; text-align: center; line-height: 1; }
+  .row .ico small { display: block; font-size: .62rem; color: var(--tide); font-weight: 600; margin-top: 1px; }
+  .row .lo { color: var(--muted); text-align: right; font-weight: 500; }
+  .row .hi { font-weight: 600; text-align: right; }
+  .bar { position: relative; height: 5px; border-radius: 3px; background: rgba(0,0,0,.16); }
+  .bar span { position: absolute; inset: 0; border-radius: 3px;
+    background: linear-gradient(90deg, #6fd6cf, #f2c94c 55%, #ef8d5f); }
+  .row .sub { grid-column: 2 / -1; display: flex; gap: 6px; flex-wrap: wrap; margin-top: -2px; }
+  .chip { font-size: .72rem; font-weight: 600; border-radius: 999px; padding: 2px 8px; background: rgba(0,0,0,.18); }
+  .chip.t { color: var(--tide); } .chip.s { color: var(--sun); } .chip.w { color: #ffb8a3; } .chip.b { color: var(--both); background: rgba(0,0,0,.18); }
+  .row.sel .dname { text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 2px; }
+
+  /* Settings */
+  details.card summary { list-style: none; cursor: pointer; }
+  details.card summary::-webkit-details-marker { display: none; }
+  details.card summary .card-h { margin: 0; padding: 0; }
+  details.card:not([open]) summary .card-h::after { display: none; }
+  details.card[open] summary .card-h { padding-bottom: 11px; margin-bottom: 4px; }
+  details.card summary .chev { margin-left: auto; transition: transform .2s; }
+  details.card[open] summary .chev { transform: rotate(90deg); }
+  .set-row { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom: 0.5px solid var(--line); gap: 12px; }
+  .set-row:last-of-type { border-bottom: 0; }
+  .set-row input { font: inherit; color: #fff; background: rgba(0,0,0,.15); border: 0; border-radius: 8px; padding: 5px 8px; text-align: right; width: 7.5rem; color-scheme: dark; }
+  .btns { display: flex; gap: 8px; margin-top: 10px; }
+  .btn { flex: 1; font: inherit; font-weight: 600; font-size: .95rem; color: #fff; border: 0; border-radius: 12px; padding: 11px;
+    background: rgba(243,234,216,.16); cursor: pointer; }
+  .btn:active { background: rgba(243,234,216,.28); }
+  .btn.primary { background: #b3532c; }
+  .btn.primary:active { background: #c9653b; }
+
+  .status { text-align: center; color: var(--muted); font-size: .85rem; margin: 2px 0 14px; min-height: 1.2em; }
+  .status.error { color: #ffd0d0; }
+  footer { font-size: .75rem; color: var(--muted); text-align: center; padding: 10px 8px 0; line-height: 1.5; }
+  footer a { color: var(--bone); }
+  footer .poutama { margin: 0 -16px 14px; }
+
+  .skeleton { opacity: .5; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  [data-i]:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  .notice { font-size: .8rem; color: var(--muted); padding-top: 8px; }
+  @media (max-width: 380px) {
+    .hero .temp { font-size: 5rem; }
+    .card-h .en { display: none; }
+    .row { grid-template-columns: 44px 28px 30px 1fr 30px; gap: 6px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
 </style>
 </head>
-<body>
+<body data-sky="clear">
+<div class="poutama" aria-hidden="true"></div>
 <main>
-  <h1>🌊☀️ Weather Wahine</h1>
-  <p class="sub">West Auckland days with a high tide in your window, and sunny days above your temperature threshold.</p>
+  <div class="brand" aria-hidden="true">Weather Wahine</div>
+  <h1 class="sr-only">Weather Wahine – West Auckland tides and sunny days</h1>
+  <section class="hero" id="hero">
+    <div class="loc-wrap"><select id="loc" aria-label="Beach"></select></div>
+    <div class="day-label" id="dayLabel">Today</div>
+    <div class="temp" id="heroTemp">--°</div>
+    <div class="cond" id="heroCond">Loading…</div>
+    <div class="hl" id="heroHL">&nbsp;</div>
+    <div class="badges" id="heroBadges"></div>
+  </section>
 
-  <div class="controls">
-    <label>Beach
-      <select id="loc"></select>
-    </label>
-    <label>Tide window from
-      <input type="time" id="from" value="11:00">
-    </label>
-    <label>to
-      <input type="time" id="to" value="15:00">
-    </label>
-    <label>Min temp (°C)
-      <input type="number" id="minTemp" value="20" step="1">
-    </label>
-    <label>Max rain chance (%)
-      <input type="number" id="maxRain" value="30" step="5" min="0" max="100">
-    </label>
-    <button id="refresh">Update</button>
-    <button id="ics" class="secondary">Download .ics</button>
-  </div>
+  <div class="status" id="status"></div>
 
-  <div class="legend">
-    <span style="--c: var(--tide)">High tide in window</span>
-    <span style="--c: var(--sun)">Sunny &amp; warm</span>
-    <span style="--c: var(--both)">Both ★</span>
-  </div>
+  <section class="card">
+    <div class="card-h">★ Ngā rā pai <span class="en">· Best days</span><span class="right" id="bestCount"></span></div>
+    <div id="best"><div class="empty-note">Loading…</div></div>
+  </section>
 
-  <div id="status">Loading forecast…</div>
-  <div class="grid" id="grid"></div>
+  <section class="card">
+    <div class="card-h">🌊 Te tai <span class="en">· Tide</span><span class="right" id="tideDay"></span></div>
+    <svg class="tide-svg" id="tideSvg" viewBox="0 0 340 130" role="img" aria-label="Tide height through the day"></svg>
+    <div class="tide-foot"><span id="tideHighs"></span><span id="tideWin"></span></div>
+    <div class="notice" id="tideSrc"></div>
+  </section>
 
-  <h2>★ Best days (both)</h2>
-  <ul id="best"><li>—</li></ul>
+  <section class="card">
+    <div class="card-h">📅 Maramataka <span class="en">· Calendar</span></div>
+    <div class="cal" id="cal"></div>
+    <div class="legend"><span><i style="background:var(--tide)"></i>High tide in window</span><span><i style="background:var(--sun)"></i>Sunny &amp; warm</span><span><i style="background:var(--both)"></i>Both</span></div>
+  </section>
+
+  <section class="card">
+    <div class="card-h">🗓 Matapae huarere <span class="en">· 16-day forecast</span></div>
+    <div id="list"></div>
+  </section>
+
+  <details class="card" id="settings">
+    <summary><div class="card-h">⚙︎ Tautuhinga <span class="en">· Settings</span><span class="chev">›</span></div></summary>
+    <div class="set-row"><span>High tide from</span><input type="time" id="from" value="11:00"></div>
+    <div class="set-row"><span>High tide until</span><input type="time" id="to" value="15:00"></div>
+    <div class="set-row"><span>Minimum temp (°C)</span><input type="number" id="minTemp" value="20" step="1" inputmode="numeric"></div>
+    <div class="set-row"><span>Max rain chance (%)</span><input type="number" id="maxRain" value="30" step="5" min="0" max="100" inputmode="numeric"></div>
+    <div class="btns">
+      <button class="btn" id="refresh">↻ Refresh</button>
+      <button class="btn primary" id="ics">⤓ Add to calendar</button>
+    </div>
+  </details>
 
   <footer>
-    Tide times come from the Open-Meteo Marine tidal model (accurate to roughly ±15–30 min); check
+    <div class="poutama" aria-hidden="true"></div>
+    Tides: official LINZ predictions where set up, otherwise the Open-Meteo model (±15–30 min) — check
     <a href="https://www.linz.govt.nz/products-services/tides-and-tidal-streams/tide-predictions" target="_blank" rel="noopener">LINZ tide tables</a>
-    before you go. Weather forecasts are less reliable beyond about 7 days. “Sunny” means clear, mainly clear or partly cloudy
-    (WMO code 0–2), max temperature at or above your threshold, and rain chance at or below your limit.
-    Data: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (CC BY 4.0).
+    before you go. Forecasts beyond ~7 days are a rough guide.<br>
+    “Sunny” = clear to partly cloudy through your tide window, at or above your min temp, rain chance within your limit.
+    Swell warning at 2.5 m+. Not a swimming-safety forecast.<br>
+    Data: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (CC BY 4.0) ·
+    tide tables © <a href="https://www.linz.govt.nz/" target="_blank" rel="noopener">Toitū Te Whenua LINZ</a> (CC BY 4.0)
   </footer>
 </main>
 
+<script src="tides-data.js"></script>
 <script>
-const LOCATIONS = [
-  { name: "Piha", lat: -36.954, lon: 174.469 },
-  { name: "Karekare", lat: -36.988, lon: 174.476 },
-  { name: "Te Henga / Bethells", lat: -36.887, lon: 174.442 },
-  { name: "Muriwai", lat: -36.829, lon: 174.424 },
-  { name: "Whatipu", lat: -37.044, lon: 174.507 },
-  { name: "Te Atatū (Waitematā Harbour)", lat: -36.835, lon: 174.640 },
+// West Coast beaches, roughly in driving order from Huia.
+// linz: official LINZ secondary-port differences from Onehunga, in minutes
+//   (hw = high-water time difference, lw = low-water; e.g. -1h 34m → -94).
+//   When set, tides come from the bundled LINZ tables (tides-data.js) instead of the Open-Meteo model.
+// harbour: true = inside the Manukau, where the model is wrong — only shown once linz.hw is filled in.
+const ALL_LOCATIONS = [
+  { name: "Huia Bay", lat: -37.000, lon: 174.570, harbour: true, linz: { hw: null, lw: null } },
+  { name: "Whatipu", lat: -37.044, lon: 174.507, linz: { hw: null, lw: null } },
+  { name: "Karekare", lat: -36.988, lon: 174.476, linz: { hw: null, lw: null } },
+  { name: "Piha", lat: -36.954, lon: 174.469, linz: { hw: null, lw: null } },
+  { name: "Te Henga", lat: -36.887, lon: 174.442, linz: { hw: null, lw: null } },
+  { name: "Muriwai", lat: -36.829, lon: 174.424, linz: { hw: null, lw: null } },
 ];
+const usesLinz = (l) => l.linz?.hw != null && !!window.LINZ_TIDES;
+const LOCATIONS = ALL_LOCATIONS.filter((l) => !l.harbour || usesLinz(l));
+const DEFAULT_LOC = "Piha";
 const TZ = "Pacific/Auckland";
 const DAYS = 16;
-const WMO = { 0: "Clear", 1: "Mainly clear", 2: "Partly cloudy", 3: "Overcast", 45: "Fog", 48: "Fog",
-  51: "Drizzle", 53: "Drizzle", 55: "Drizzle", 61: "Rain", 63: "Rain", 65: "Heavy rain",
-  80: "Showers", 81: "Showers", 82: "Heavy showers", 95: "Thunder", 96: "Thunder", 99: "Thunder" };
+const BIG_SWELL_M = 2.5;   // waves at or above this get a surf warning
+const windowLabel = () => `${fmtTime(settings().from).replace(":00", "")}–${fmtTime(settings().to).replace(":00", "")}`;
+const WMO = {
+  0: ["Clear", "☀️", "clear"], 1: ["Mainly Clear", "🌤️", "clear"], 2: ["Partly Cloudy", "⛅️", "partly"],
+  3: ["Cloudy", "☁️", "overcast"], 45: ["Fog", "🌫️", "overcast"], 48: ["Fog", "🌫️", "overcast"],
+  51: ["Drizzle", "🌦️", "rain"], 53: ["Drizzle", "🌦️", "rain"], 55: ["Drizzle", "🌧️", "rain"],
+  56: ["Freezing Drizzle", "🌧️", "rain"], 57: ["Freezing Drizzle", "🌧️", "rain"],
+  61: ["Light Rain", "🌦️", "rain"], 63: ["Rain", "🌧️", "rain"], 65: ["Heavy Rain", "🌧️", "storm"],
+  66: ["Freezing Rain", "🌧️", "rain"], 67: ["Freezing Rain", "🌧️", "storm"],
+  71: ["Snow", "🌨️", "overcast"], 73: ["Snow", "🌨️", "overcast"], 75: ["Snow", "🌨️", "overcast"], 77: ["Snow", "🌨️", "overcast"],
+  80: ["Showers", "🌦️", "rain"], 81: ["Showers", "🌧️", "rain"], 82: ["Heavy Showers", "⛈️", "storm"],
+  85: ["Snow Showers", "🌨️", "overcast"], 86: ["Snow Showers", "🌨️", "overcast"],
+  95: ["Thunderstorms", "⛈️", "storm"], 96: ["Thunderstorms", "⛈️", "storm"], 99: ["Thunderstorms", "⛈️", "storm"],
+};
+const wmo = (c) => WMO[c] || ["—", "🌡️", "overcast"];
 
 const $ = (id) => document.getElementById(id);
-let lastResult = [];
+const state = { data: null, key: null, days: [], sel: 0 };
 
+/* ---------- prefs ---------- */
+const currentLocValid = () => LOCATIONS.some((l) => l.name === $("loc").value);
+const PREF_IDS = ["loc", "from", "to", "minTemp", "maxRain"];
 function savePrefs() {
-  try {
-    localStorage.setItem("ww-prefs", JSON.stringify({
-      loc: $("loc").value, from: $("from").value, to: $("to").value,
-      minTemp: $("minTemp").value, maxRain: $("maxRain").value }));
-  } catch (e) {}
+  try { localStorage.setItem("ww-prefs", JSON.stringify(Object.fromEntries(PREF_IDS.map((k) => [k, $(k).value])))); } catch (e) {}
 }
 function loadPrefs() {
   try {
     const p = JSON.parse(localStorage.getItem("ww-prefs") || "null");
-    if (p) for (const k of ["loc", "from", "to", "minTemp", "maxRain"]) if (p[k] != null) $(k).value = p[k];
+    if (p) for (const k of PREF_IDS) if (p[k] != null && p[k] !== "") $(k).value = p[k];
+    if (!currentLocValid()) $("loc").value = DEFAULT_LOC; // old saved value (list position or removed beach)
   } catch (e) {}
 }
 
-const toMin = (hhmm) => { const [h, m] = hhmm.split(":").map(Number); return h * 60 + m; };
+/* ---------- helpers ---------- */
+// Read settings with safe fallbacks; a reversed window (e.g. 3pm → 11am) is swapped.
+function settings() {
+  const t = (id, def) => (/^\d{1,2}:\d{2}$/.test($(id).value) ? toMin($(id).value) : toMin(def));
+  const n = (id, def) => { const v = parseFloat($(id).value); return Number.isFinite(v) ? v : def; };
+  let from = t("from", "11:00"), to = t("to", "15:00");
+  if (from > to) [from, to] = [to, from];
+  return { from, to, minTemp: n("minTemp", 20), maxRain: n("maxRain", 30) };
+}
+const toMin = (hhmm) => { const [h, m] = String(hhmm).split(":").map(Number); return h * 60 + (m || 0); };
 const fmtTime = (mins) => {
-  mins = Math.round(mins);
+  mins = Math.round(mins) % 1440;
   const h = Math.floor(mins / 60), m = mins % 60;
-  const ap = h >= 12 ? "pm" : "am", h12 = ((h + 11) % 12) + 1;
-  return `${h12}:${String(m).padStart(2, "0")}${ap}`;
+  return `${((h + 11) % 12) + 1}:${String(m).padStart(2, "0")}${h >= 12 ? "pm" : "am"}`;
 };
+const fmtOffset = (m) => `${m < 0 ? "−" : "+"}${Math.floor(Math.abs(m) / 60)}h ${String(Math.abs(m) % 60).padStart(2, "0")}m`;
+const dateObj = (iso) => new Date(iso + "T12:00:00Z");
+const fmtDate = (iso, opts) => dateObj(iso).toLocaleDateString("en-NZ", { timeZone: "UTC", ...opts });
+const shortDay = (d, i) => (i === 0 ? "Today" : fmtDate(d.date, { weekday: "short" }));
 
-// Find high tides as local maxima of hourly sea level, refined with a parabola through the 3 points.
+// High tides = local maxima of hourly sea level, refined with a parabola through 3 points.
 function findHighTides(times, levels) {
   const out = [];
   for (let i = 1; i < levels.length - 1; i++) {
@@ -163,103 +306,268 @@ function findHighTides(times, levels) {
     if (a == null || b == null || c == null) continue;
     if (b > a && b >= c) {
       const denom = a - 2 * b + c;
-      const offset = denom !== 0 ? 0.5 * (a - c) / denom : 0; // hours, in [-0.5, 0.5]
+      const off = denom !== 0 ? 0.5 * (a - c) / denom : 0;
       const [date, hm] = times[i].split("T");
-      let mins = toMin(hm) + offset * 60;
-      let d = date;
-      if (mins < 0 || mins >= 1440) { // spills into neighbouring day
+      let mins = toMin(hm) + off * 60, d = date;
+      if (mins < 0 || mins >= 1440) {
         const dt = new Date(date + "T00:00:00Z"); dt.setUTCDate(dt.getUTCDate() + (mins < 0 ? -1 : 1));
         d = dt.toISOString().slice(0, 10); mins = (mins + 1440) % 1440;
       }
-      out.push({ date: d, mins, height: b - denom * offset * offset / 4 });
+      out.push({ date: d, mins, height: b - denom * off * off / 4 });
     }
   }
   return out;
 }
 
 async function fetchData(loc) {
-  const common = `latitude=${loc.lat}&longitude=${loc.lon}&timezone=${encodeURIComponent(TZ)}&forecast_days=${DAYS}`;
-  const [marine, weather] = await Promise.all([
-    fetch(`https://marine-api.open-meteo.com/v1/marine?${common}&hourly=sea_level_height_msl&cell_selection=sea`),
-    fetch(`https://api.open-meteo.com/v1/forecast?${common}&daily=weather_code,temperature_2m_max,precipitation_probability_max,sunshine_duration`),
+  const q = `latitude=${loc.lat}&longitude=${loc.lon}&timezone=${encodeURIComponent(TZ)}&forecast_days=${DAYS}`;
+  const linz = usesLinz(loc);
+  const [m, w] = await Promise.all([
+    fetch(`https://marine-api.open-meteo.com/v1/marine?${q}&hourly=${linz ? "" : "sea_level_height_msl,"}wave_height&cell_selection=sea`).catch(() => null),
+    fetch(`https://api.open-meteo.com/v1/forecast?${q}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunshine_duration,uv_index_max&hourly=weather_code,temperature_2m,precipitation_probability,cloud_cover`),
   ]);
-  if (!marine.ok) throw new Error(`Tide data request failed (${marine.status})`);
-  if (!weather.ok) throw new Error(`Weather request failed (${weather.status})`);
-  return { marine: await marine.json(), weather: await weather.json() };
+  // Waves are optional; the marine feed is only essential when it is also the tide source.
+  if (!linz && !m?.ok) throw new Error(`tide data unavailable (${m ? m.status : "offline"})`);
+  if (!w.ok) throw new Error(`weather unavailable (${w.status})`);
+  return { loc, marine: m?.ok ? await m.json() : null, weather: await w.json() };
 }
 
-function analyse({ marine, weather }) {
-  const from = toMin($("from").value || "11:00"), to = toMin($("to").value || "15:00");
-  const minTemp = Number($("minTemp").value), maxRain = Number($("maxRain").value);
-  const tides = findHighTides(marine.hourly.time, marine.hourly.sea_level_height_msl);
-  const d = weather.daily;
+// Tides from the bundled LINZ tables: shift Onehunga extremes by the beach's secondary-port
+// differences, then draw a smooth curve between them (cosine interpolation, 20-min steps).
+const naive = (iso) => Date.parse(iso + ":00Z") / 60000;            // local time as plain minutes
+const naiveIso = (m) => new Date(m * 60000).toISOString().slice(0, 16);
+function linzTides(loc, dates) {
+  const start = naive(dates[0] + "T00:00") - 24 * 60, end = naive(dates.at(-1) + "T23:59") + 24 * 60;
+  const ev = window.LINZ_TIDES.events
+    .map(([t, h, hi]) => [naive(t) + (hi ? loc.linz.hw : (loc.linz.lw ?? loc.linz.hw)), h, hi])
+    .filter(([m]) => m >= start && m <= end);
+  const highs = ev.filter((e) => e[2]).map(([m, h]) => ({ date: naiveIso(m).slice(0, 10), mins: m % 1440, height: h }));
+  const time = [], level = [];
+  for (let m = naive(dates[0] + "T00:00"); m <= naive(dates.at(-1) + "T23:40"); m += 20) {
+    const i = ev.findIndex((e) => e[0] > m);
+    time.push(naiveIso(m));
+    if (i < 1) { level.push(null); continue; }
+    const [m0, h0] = ev[i - 1], [m1, h1] = ev[i], f = (m - m0) / (m1 - m0);
+    level.push(h0 + (h1 - h0) * (1 - Math.cos(Math.PI * f)) / 2);
+  }
+  return { highs, time, level, source: "LINZ" };
+}
+function tideData({ loc, marine, weather }) {
+  if (usesLinz(loc)) return linzTides(loc, weather.daily.time);
+  const time = marine.hourly.time, level = marine.hourly.sea_level_height_msl;
+  return { highs: findHighTides(time, level), time, level, source: "model" };
+}
+
+function analyse(data) {
+  const { weather } = data;
+  const { from, to, minTemp, maxRain } = settings();
+  const td = tideData(data);
+  state.tideSource = td.source;
+  const ht = td.time, hl = td.level, tides = td.highs;
+  const stepMins = ht.length > 1 ? naive(ht[1]) - naive(ht[0]) : 60;
+  const stepsPerDay = 1440 / stepMins;
+  const d = weather.daily, wh = weather.hourly, mh = data.marine?.hourly;
+  // Hours that overlap the window, e.g. 11:00–15:00 → the 11am…3pm hours.
+  const inWin = (iso) => { const m = toMin(iso.slice(11)); return m + 59 >= from && m <= to; };
+  const pick = (h, key, date) => (h?.[key] ? h.time.map((t, j) => (t.startsWith(date) && inWin(t) ? h[key][j] : null)).filter((v) => v != null) : []);
+  const max = (a) => (a.length ? Math.max(...a) : null);
+  const mean = (a) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : null);
   return d.time.map((date, i) => {
     const highs = tides.filter((t) => t.date === date);
     const inWindow = highs.filter((t) => t.mins >= from && t.mins <= to);
-    const code = d.weather_code[i], tmax = d.temperature_2m_max[i];
+    const curve = [];
+    ht.forEach((t, j) => { if (t.startsWith(date) && hl[j] != null) curve.push([toMin(t.slice(11)), hl[j]]); });
+    const code = d.weather_code[i], tmax = d.temperature_2m_max[i], tmin = d.temperature_2m_min?.[i];
     const rain = d.precipitation_probability_max?.[i];
     const sunH = d.sunshine_duration?.[i] != null ? d.sunshine_duration[i] / 3600 : null;
+    const uv = d.uv_index_max?.[i];
     const hasWeather = code != null && tmax != null;
-    const sunny = hasWeather && code <= 2 && tmax >= minTemp && (rain == null || rain <= maxRain);
-    return { date, highs, inWindow, tide: inWindow.length > 0, sunny, code, tmax, rain, sunH, hasWeather };
+    // Weather during the window (hourly). Falls back to the daily summary if hourly data is missing.
+    const wCodes = pick(wh, "weather_code", date), wTemps = pick(wh, "temperature_2m", date);
+    const hourly = wCodes.length > 0 && wTemps.length > 0;
+    const winCode = hourly ? max(wCodes) : code, winTemp = hourly ? max(wTemps) : tmax;
+    const winRain = hourly ? max(pick(wh, "precipitation_probability", date)) : rain;
+    const winCloud = mean(pick(wh, "cloud_cover", date));
+    const sunny = hasWeather && winCode <= 2 && winTemp >= minTemp && (winRain == null || winRain <= maxRain);
+    const wave = max(pick(mh, "wave_height", date));
+    const bigSwell = wave != null && wave >= BIG_SWELL_M;
+    const tide = inWindow.length > 0;
+    const hasTide = curve.length >= stepsPerDay * 0.8;
+    return { date, highs, inWindow, curve, hasTide, tide, sunny, both: tide && sunny, code, tmax, tmin, rain, sunH, uv, hasWeather,
+      hourly, winCode, winTemp, winRain, winCloud, wave, bigSwell };
   });
 }
 
-function render(days) {
-  const grid = $("grid"); grid.innerHTML = "";
-  for (const n of ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]) {
-    const el = document.createElement("div"); el.className = "dow"; el.textContent = n; grid.appendChild(el);
-  }
-  const first = new Date(days[0].date + "T12:00:00Z");
-  const lead = (first.getUTCDay() + 6) % 7;
-  for (let i = 0; i < lead; i++) { const e = document.createElement("div"); e.className = "day empty"; grid.appendChild(e); }
-
-  for (const day of days) {
-    const dt = new Date(day.date + "T12:00:00Z");
-    const el = document.createElement("div");
-    el.className = "day" + (day.tide && day.sunny ? " both" : day.tide ? " tide" : day.sunny ? " sun" : "")
-      + (!day.hasWeather && !day.highs.length ? " nodata" : "");
-    const label = dt.toLocaleDateString("en-NZ", { day: "numeric", month: "short", timeZone: "UTC" });
-    let html = `<div class="date"><span>${label}</span>${day.tide && day.sunny ? '<span class="star">★</span>' : ""}</div>`;
-    if (day.tide) html += day.inWindow.map((t) => `<div class="tag t">🌊 High ${fmtTime(t.mins)}</div>`).join("");
-    if (day.sunny) html += `<div class="tag s">☀️ ${Math.round(day.tmax)}°</div>`;
-    const otherHighs = day.highs.filter((t) => !day.inWindow.includes(t)).map((t) => fmtTime(t.mins));
-    if (otherHighs.length) html += `<div class="meta">Highs: ${otherHighs.join(", ")}</div>`;
-    if (day.hasWeather && !day.sunny) html += `<div class="meta">${WMO[day.code] || "Code " + day.code}, ${Math.round(day.tmax)}°${day.rain != null ? `, ${day.rain}% rain` : ""}</div>`;
-    if (!day.hasWeather) html += `<div class="meta">No weather yet</div>`;
-    el.innerHTML = html;
-    el.title = [`${day.date}`, day.highs.length ? `High tides: ${day.highs.map((t) => fmtTime(t.mins)).join(", ")}` : "No tide data",
-      day.hasWeather ? `${WMO[day.code] || day.code}, max ${day.tmax}°C, rain ${day.rain ?? "?"}%, sun ${day.sunH?.toFixed(1) ?? "?"}h` : ""].join("\n");
-    grid.appendChild(el);
-  }
-
-  const best = days.filter((d) => d.tide && d.sunny);
-  $("best").innerHTML = best.length
-    ? best.map((d) => {
-        const dt = new Date(d.date + "T12:00:00Z");
-        const name = dt.toLocaleDateString("en-NZ", { weekday: "long", day: "numeric", month: "long", timeZone: "UTC" });
-        return `<li><strong>${name}</strong> — high tide ${d.inWindow.map((t) => fmtTime(t.mins)).join(" & ")}, ${WMO[d.code]}, ${Math.round(d.tmax)}°C</li>`;
-      }).join("")
-    : "<li>No days match both conditions in the forecast range.</li>";
+/* ---------- render ---------- */
+function renderHero() {
+  const d = state.days[state.sel], i = state.sel;
+  const [name, , sky] = wmo(d.winCode ?? d.code);
+  document.body.dataset.sky = d.hasWeather ? sky : "overcast";
+  $("dayLabel").textContent = i === 0 ? "Today" : fmtDate(d.date, { weekday: "long", day: "numeric", month: "long" });
+  $("heroTemp").textContent = d.hasWeather ? `${Math.round(d.tmax)}°` : "--°";
+  $("heroCond").innerHTML = d.hasWeather ? `${name}${d.hourly ? ` <span class="win">${windowLabel()}</span>` : ""}` : "No forecast yet";
+  $("heroHL").textContent = d.hasWeather ? `H:${Math.round(d.tmax)}°  L:${Math.round(d.tmin ?? d.tmax)}°` : " ";
+  const b = [];
+  if (d.both) b.push(`<span class="badge both">★ Tide & sun</span>`);
+  if (d.tide) b.push(`<span class="badge">🌊 High ${d.inWindow.map((t) => fmtTime(t.mins)).join(" & ")}</span>`);
+  if (d.winRain != null) b.push(`<span class="badge">💧 ${d.winRain}%</span>`);
+  if (d.wave != null) b.push(`<span class="badge${d.bigSwell ? " warn" : ""}">${d.bigSwell ? "⚠️ Big swell" : "Swell"} ${d.wave.toFixed(1)} m</span>`);
+  if (d.uv != null && d.hasWeather) b.push(`<span class="badge">UV ${Math.round(d.uv)}</span>`);
+  $("heroBadges").innerHTML = b.join("");
 }
 
+function renderBest() {
+  const best = state.days.map((d, i) => ({ ...d, i })).filter((d) => d.both);
+  const lastTide = [...state.days].reverse().find((d) => d.hasTide);
+  const notice = lastTide && lastTide !== state.days.at(-1)
+    ? `<div class="notice">Tide forecast runs to ${fmtDate(lastTide.date, { weekday: "short", day: "numeric", month: "short" })}; later days can't be checked for tides yet.</div>` : "";
+  $("bestCount").textContent = best.length ? `${best.length} day${best.length > 1 ? "s" : ""}` : "";
+  $("best").innerHTML = best.length
+    ? best.map((d) => `<div class="best-row" data-i="${d.i}">
+        <span class="when">${d.i === 0 ? "Today" : fmtDate(d.date, { weekday: "short", day: "numeric", month: "short" })}</span>
+        <span class="what">${wmo(d.winCode)[1]} High tide ${d.inWindow.map((t) => fmtTime(t.mins)).join(" & ")}${d.bigSwell ? ` <span class="warn-text">⚠️ ${d.wave.toFixed(1)} m swell</span>` : ""}</span>
+        <span class="t">${Math.round(d.winTemp)}°</span></div>`).join("")
+    : `<div class="empty-note">No days with both a ${fmtTime(settings().from)}–${fmtTime(settings().to)} high tide and sunny weather in the next ${state.days.length} days.</div>`;
+  $("best").insertAdjacentHTML("beforeend", notice + `<div class="notice safety">★ means the tide and sun line up, not that it's safe to swim. West Coast beaches have strong rips and big surf — swim between the flags at patrolled beaches and check
+    <a href="https://safeswim.org.nz/" target="_blank" rel="noopener">Safeswim</a> before you go.</div>`);
+}
+
+function renderTide() {
+  const d = state.days[state.sel];
+  const svg = $("tideSvg");
+  $("tideDay").textContent = state.sel === 0 ? "Today" : fmtDate(d.date, { weekday: "short", day: "numeric", month: "short" });
+  if (!d.hasTide) { svg.innerHTML = `<text x="170" y="65" text-anchor="middle">Tide forecast doesn't reach this far ahead yet</text>`; $("tideHighs").textContent = ""; $("tideWin").textContent = ""; return; }
+  const W = 340, H = 130, top = 22, bot = 108;
+  const all = state.days.flatMap((x) => x.curve.map((p) => p[1]));
+  const lo = Math.min(...all), hi = Math.max(...all);
+  const x = (m) => (m / 1440) * W, y = (v) => bot - ((v - lo) / (hi - lo || 1)) * (bot - top);
+  const pts = d.curve.map(([m, v]) => [x(m), y(v)]);
+  // smooth path (Catmull-Rom → Bézier)
+  let path = `M${pts[0][0]},${pts[0][1]}`;
+  for (let i = 0; i < pts.length - 1; i++) {
+    const p0 = pts[i - 1] || pts[i], p1 = pts[i], p2 = pts[i + 1], p3 = pts[i + 2] || p2;
+    path += ` C${p1[0] + (p2[0] - p0[0]) / 6},${p1[1] + (p2[1] - p0[1]) / 6} ${p2[0] - (p3[0] - p1[0]) / 6},${p2[1] - (p3[1] - p1[1]) / 6} ${p2[0]},${p2[1]}`;
+  }
+  const last = pts[pts.length - 1];
+  const area = `${path} L${last[0]},${bot} L${pts[0][0]},${bot} Z`;
+  const wx1 = x(settings().from), wx2 = x(settings().to);
+  const hours = [0, 6, 12, 18].map((h) => `<text x="${x(h * 60) + (h ? 0 : 2)}" y="${H - 6}" text-anchor="${h ? "middle" : "start"}">${h === 0 ? "12am" : h === 12 ? "12pm" : fmtTime(h * 60).replace(":00", "")}</text>`).join("");
+  const highs = d.highs.map((t) => {
+    const cx = x(t.mins), cy = y(t.height), inw = d.inWindow.includes(t);
+    return `<circle cx="${cx}" cy="${cy}" r="${inw ? 5 : 3.5}" fill="${inw ? "#fff" : "rgba(255,255,255,.7)"}" ${inw ? 'stroke="#d9734a" stroke-width="2.5"' : ""}/>
+      <text class="hl-label" x="${Math.min(W - 18, Math.max(18, cx))}" y="${cy - 10}" text-anchor="middle">${fmtTime(t.mins)}</text>`;
+  }).join("");
+  const nowLine = state.sel === 0 ? (() => {
+    const parts = new Intl.DateTimeFormat("en-NZ", { timeZone: TZ, hour: "numeric", minute: "numeric", hourCycle: "h23" }).formatToParts(new Date());
+    const m = Number(parts.find((p) => p.type === "hour").value) * 60 + Number(parts.find((p) => p.type === "minute").value);
+    return `<line x1="${x(m)}" x2="${x(m)}" y1="${top - 8}" y2="${bot}" stroke="rgba(255,255,255,.55)" stroke-dasharray="2 3"/>`;
+  })() : "";
+  svg.innerHTML = `
+    <defs><linearGradient id="tg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#6fd6cf" stop-opacity=".5"/><stop offset="1" stop-color="#6fd6cf" stop-opacity="0"/></linearGradient></defs>
+    <rect x="${wx1}" y="${top - 12}" width="${Math.max(0, wx2 - wx1)}" height="${bot - top + 12}" rx="6" fill="rgba(217,115,74,.16)"/>
+    <line x1="0" x2="${W}" y1="${bot}" y2="${bot}" stroke="rgba(255,255,255,.2)"/>
+    <path d="${area}" fill="url(#tg)"/>
+    <path d="${path}" fill="none" stroke="#c4efe9" stroke-width="2.5" stroke-linecap="round"/>
+    ${nowLine}${highs}${hours}`;
+  $("tideHighs").textContent = d.highs.length ? `High: ${d.highs.map((t) => fmtTime(t.mins)).join(" · ")}` : "";
+  $("tideWin").textContent = d.tide ? "✓ In your window" : "Not in window";
+  $("tideSrc").textContent = state.tideSource === "LINZ"
+    ? `Official LINZ prediction (Onehunga ${fmtOffset(currentLoc().linz.hw)})`
+    : "Open-Meteo tide model (±15–30 min)";
+}
+
+function renderCal() {
+  const cal = $("cal");
+  let html = ["M", "T", "W", "T", "F", "S", "S"].map((n) => `<div class="dow">${n}</div>`).join("");
+  const lead = (dateObj(state.days[0].date).getUTCDay() + 6) % 7;
+  html += `<div class="cell blank"></div>`.repeat(lead);
+  state.days.forEach((d, i) => {
+    const dt = dateObj(d.date), num = dt.getUTCDate();
+    const mon = i === 0 || num === 1 ? fmtDate(d.date, { month: "short" }) : "";
+    const cls = ["cell", d.both ? "both" : "", i === state.sel ? "sel" : ""].join(" ");
+    html += `<div class="${cls}" data-i="${i}" title="${fmtDate(d.date, { weekday: "long", day: "numeric", month: "long" })}">
+      <span class="mon">${mon}</span><div class="num">${num}</div>
+      <div class="dots">${d.tide ? '<span class="dot t"></span>' : ""}${d.sunny ? '<span class="dot s"></span>' : ""}</div></div>`;
+  });
+  cal.innerHTML = html;
+}
+
+function renderList() {
+  const ws = state.days.filter((d) => d.hasWeather);
+  const lo = Math.min(...ws.map((d) => d.tmin ?? d.tmax)), hi = Math.max(...ws.map((d) => d.tmax));
+  const span = hi - lo || 1;
+  $("list").innerHTML = state.days.map((d, i) => {
+    if (!d.hasWeather) return `<div class="row skeleton" data-i="${i}"><span class="dname">${shortDay(d, i)}</span><span class="ico">–</span><span class="lo"></span><div class="bar"></div><span class="hi"></span></div>`;
+    const tmin = d.tmin ?? d.tmax;
+    const left = ((tmin - lo) / span) * 100, width = Math.max(4, ((d.tmax - tmin) / span) * 100);
+    const chips = [];
+    if (d.both) chips.push(`<span class="chip b">★ Tide & sun</span>`);
+    if (d.tide) chips.push(`<span class="chip t">🌊 ${d.inWindow.map((t) => fmtTime(t.mins)).join(" & ")}</span>`);
+    else if (d.sunny) chips.push(`<span class="chip s">☀︎ Sunny & warm</span>`);
+    if (!d.hasTide && !d.sunny) chips.push(`<span class="chip">Tide n/a</span>`);
+    if (d.bigSwell) chips.push(`<span class="chip w">⚠️ ${d.wave.toFixed(1)} m swell</span>`);
+    const rainSmall = d.winRain >= 20 ? `<small>${d.winRain}%</small>` : "";
+    return `<div class="row${i === state.sel ? " sel" : ""}" data-i="${i}">
+      <span class="dname">${shortDay(d, i)}</span>
+      <span class="ico">${wmo(d.winCode)[1]}${rainSmall}</span>
+      <span class="lo">${Math.round(tmin)}°</span>
+      <div class="bar"><span style="clip-path:inset(0 ${Math.max(0, 100 - left - width)}% 0 ${left}% round 3px)"></span></div>
+      <span class="hi">${Math.round(d.tmax)}°</span>
+      ${chips.length ? `<div class="sub">${chips.join("")}</div>` : ""}
+    </div>`;
+  }).join("");
+}
+
+function renderAll() { renderHero(); renderBest(); renderTide(); renderCal(); renderList(); }
+
+function select(i) {
+  state.sel = i; renderHero(); renderTide(); renderCal(); renderList();
+  window.scrollTo({ top: 0, behavior: "smooth" });
+}
+document.addEventListener("keydown", (e) => {
+  if ((e.key === "Enter" || e.key === " ") && e.target.matches?.("[data-i]")) { e.preventDefault(); e.target.click(); }
+});
+// make every tappable day keyboard-focusable after each render
+new MutationObserver(() => document.querySelectorAll("[data-i]:not([tabindex])").forEach((el) => { el.tabIndex = 0; el.setAttribute("role", "button"); }))
+  .observe(document.querySelector("main"), { childList: true, subtree: true });
+document.addEventListener("click", (e) => {
+  const el = e.target.closest("[data-i]");
+  if (el && state.days.length) select(Number(el.dataset.i));
+});
+
+/* ---------- calendar export ---------- */
+// iCalendar lines must be at most 75 bytes; longer ones continue on the next line after a space.
+function foldLine(line) {
+  const enc = new TextEncoder(), out = [];
+  let cur = "", limit = 75;
+  for (const ch of line) {
+    if (enc.encode(cur + ch).length > limit) { out.push(cur); cur = ""; limit = 74; }
+    cur += ch;
+  }
+  out.push(cur);
+  return out.join("\r\n ");
+}
 function toICS(days, locName) {
   const pad = (n) => String(n).padStart(2, "0");
   const stamp = new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z";
-  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Weather Wahine//EN", "CALSCALE:GREGORIAN",
-    `X-WR-CALNAME:Weather Wahine – ${locName}`];
+  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Weather Wahine//EN", "CALSCALE:GREGORIAN", `X-WR-CALNAME:Weather Wahine – ${locName}`,
+    "BEGIN:VTIMEZONE", `TZID:${TZ}`,
+    "BEGIN:DAYLIGHT", "TZOFFSETFROM:+1200", "TZOFFSETTO:+1300", "TZNAME:NZDT", "DTSTART:19700927T020000", "RRULE:FREQ=YEARLY;BYMONTH=9;BYDAY=-1SU", "END:DAYLIGHT",
+    "BEGIN:STANDARD", "TZOFFSETFROM:+1300", "TZOFFSETTO:+1200", "TZNAME:NZST", "DTSTART:19700405T030000", "RRULE:FREQ=YEARLY;BYMONTH=4;BYDAY=1SU", "END:STANDARD",
+    "END:VTIMEZONE"];
   for (const d of days) {
     if (!d.tide && !d.sunny) continue;
     const ymd = d.date.replace(/-/g, "");
     const parts = [];
     if (d.tide) parts.push(`High tide ${d.inWindow.map((t) => fmtTime(t.mins)).join(" & ")}`);
-    if (d.sunny) parts.push(`Sunny ${Math.round(d.tmax)}°C`);
-    const summary = (d.tide && d.sunny ? "★ " : d.tide ? "🌊 " : "☀️ ") + parts.join(" · ") + ` (${locName})`;
+    if (d.sunny) parts.push(`Sunny ${Math.round(d.winTemp)}°C`);
+    if (d.bigSwell) parts.push(`⚠ ${d.wave.toFixed(1)} m swell`);
+    const summary = (d.both ? "★ " : d.tide ? "🌊 " : "☀️ ") + parts.join(" · ") + ` (${locName})`;
     lines.push("BEGIN:VEVENT", `UID:${ymd}-${locName.replace(/\W+/g, "")}@weather-wahine`, `DTSTAMP:${stamp}`);
     if (d.tide) {
-      const t = d.inWindow[0], s = Math.max(0, t.mins - 60), e = Math.min(1439, t.mins + 60);
-      lines.push(`DTSTART;TZID=${TZ}:${ymd}T${pad(Math.floor(s / 60))}${pad(Math.round(s % 60))}00`,
-                 `DTEND;TZID=${TZ}:${ymd}T${pad(Math.floor(e / 60))}${pad(Math.round(e % 60))}00`);
+      const t = d.inWindow[0], s = Math.max(0, Math.round(t.mins) - 60), e = Math.min(1439, Math.round(t.mins) + 60);
+      lines.push(`DTSTART;TZID=${TZ}:${ymd}T${pad(Math.floor(s / 60))}${pad(s % 60)}00`, `DTEND;TZID=${TZ}:${ymd}T${pad(Math.floor(e / 60))}${pad(e % 60)}00`);
     } else {
       const next = new Date(d.date + "T00:00:00Z"); next.setUTCDate(next.getUTCDate() + 1);
       lines.push(`DTSTART;VALUE=DATE:${ymd}`, `DTEND;VALUE=DATE:${next.toISOString().slice(0, 10).replace(/-/g, "")}`);
@@ -267,40 +575,50 @@ function toICS(days, locName) {
     lines.push(`SUMMARY:${summary}`, "TRANSP:TRANSPARENT", "END:VEVENT");
   }
   lines.push("END:VCALENDAR");
-  return lines.join("\r\n");
+  return lines.map(foldLine).join("\r\n");
 }
 
-let cache = { key: null, data: null };
+/* ---------- main ---------- */
+const currentLoc = () => LOCATIONS.find((l) => l.name === $("loc").value) || LOCATIONS.find((l) => l.name === DEFAULT_LOC);
 async function update(force) {
-  const loc = LOCATIONS[Number($("loc").value)] || LOCATIONS[0];
+  const loc = currentLoc();
   savePrefs();
-  const st = $("status"); st.className = "";
+  const st = $("status"); st.className = "status";
   try {
-    if (force || cache.key !== loc.name) {
-      st.textContent = `Loading forecast for ${loc.name}…`;
-      cache = { key: loc.name, data: await fetchData(loc) };
+    if (force || state.key !== loc.name) {
+      st.textContent = `Updating ${loc.name}…`;
+      state.data = await fetchData(loc); state.key = loc.name; state.fetchedAt = Date.now();
     }
-    lastResult = analyse(cache.data);
-    render(lastResult);
-    const n = lastResult.filter((d) => d.tide && d.sunny).length;
-    st.textContent = `${loc.name}: next ${lastResult.length} days · ${n} day${n === 1 ? "" : "s"} with both. Updated ${new Date().toLocaleTimeString("en-NZ", { hour: "numeric", minute: "2-digit" })}.`;
+    state.days = analyse(state.data);
+    state.sel = Math.min(state.sel, state.days.length - 1);
+    renderAll();
+    st.textContent = `Updated ${new Date().toLocaleTimeString("en-NZ", { hour: "numeric", minute: "2-digit" })}`;
   } catch (e) {
-    st.className = "error"; st.textContent = `Couldn't load the forecast: ${e.message}. Check your connection and try again.`;
+    st.className = "status error";
+    st.textContent = `Couldn't load the forecast — ${e.message}. Tap Refresh to try again.`;
+    $("heroCond").textContent = "Offline";
   }
 }
 
-LOCATIONS.forEach((l, i) => { const o = document.createElement("option"); o.value = i; o.textContent = l.name; $("loc").appendChild(o); });
+LOCATIONS.forEach((l) => $("loc").add(new Option(l.name, l.name)));
+$("loc").value = DEFAULT_LOC;
 loadPrefs();
-$("loc").addEventListener("change", () => update(false));
+$("loc").addEventListener("change", () => { state.sel = 0; update(false); });
 for (const id of ["from", "to", "minTemp", "maxRain"]) $(id).addEventListener("change", () => update(false));
 $("refresh").addEventListener("click", () => update(true));
 $("ics").addEventListener("click", () => {
-  if (!lastResult.length) return;
-  const loc = LOCATIONS[Number($("loc").value)] || LOCATIONS[0];
-  const blob = new Blob([toICS(lastResult, loc.name)], { type: "text/calendar" });
+  if (!state.days.length) return;
+  const loc = currentLoc();
+  const blob = new Blob([toICS(state.days, loc.name)], { type: "text/calendar" });
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
   a.download = `weather-wahine-${loc.name.split(" ")[0].toLowerCase()}.ics`; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+// Home-screen apps resume old pages: refetch if the data is over an hour old or from a previous day.
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible" || !state.fetchedAt) return;
+  const stale = Date.now() - state.fetchedAt > 3600e3 || new Date(state.fetchedAt).toDateString() !== new Date().toDateString();
+  if (stale) { state.sel = 0; update(true); }
 });
 update(false);
 </script>

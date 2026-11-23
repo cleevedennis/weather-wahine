@@ -1,0 +1,38 @@
+# Daily canary against the real APIs + early warning before the bundled LINZ tide data runs out.
+# Never blocks merges. A failed scheduled run emails the repo owner (GitHub's default notification).
+name: Live canary
+
+on:
+  schedule:
+    - cron: "23 17 * * *"   # 6:23am NZDT / 5:23am NZST
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  canary:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+
+      - name: LINZ tide data has at least 90 days left
+        run: python3 tools/check_tide_data.py --warn-days 90
+
+      - name: Real Open-Meteo data loads for every beach
+        run: npx playwright test --project=live --trace off
+
+      - name: Upload test report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-report
+          path: playwright-report
+          retention-days: 14
