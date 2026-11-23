@@ -23,5 +23,5 @@
 - [ ] Settings → Branches: protect `main`, require the "Offline test gate" check
 
 ## Later
-- [ ] Before end of 2027: add Onehunga 2028 LINZ table (steps in README). The daily canary will warn 90 days ahead.
+- [ ] Before end of 2027: add Onehunga 2028 LINZ table (steps in docs/tides.md). The daily canary will warn 90 days ahead.
 - [ ] Note: re-importing the .ics updates matching days, but days that stop qualifying stay in your calendar — delete old ones.
