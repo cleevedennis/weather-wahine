@@ -35,5 +35,14 @@ jobs:
           base=$(gh pr view "$pr" -R "$REPO" --json baseRefName --jq .baseRefName)
           gh pr merge "$pr" -R "$REPO" --merge --match-head-commit "$SHA"
           echo "Merged #$pr into $base"
-          # Merges made with this token don't start new workflow runs, so start CI (tests + deploy) on the base branch.
+          # If main isn't the default branch, fast-forward the default branch to main so it holds what's published.
+          # (Fast-forward only: if the default branch has diverged, this fails loudly rather than discarding work.)
+          default=$(gh repo view "$REPO" --json defaultBranchRef --jq .defaultBranchRef.name)
+          if [ "$base" = "main" ] && [ "$default" != "main" ]; then
+            main_sha=$(gh api "repos/$REPO/git/ref/heads/main" --jq .object.sha)
+            gh api -X PATCH "repos/$REPO/git/refs/heads/$default" -f sha="$main_sha" -F force=false > /dev/null
+            echo "Fast-forwarded $default to main ($main_sha)"
+          fi
+          # Merges made with this token don't start new workflow runs, so start CI (tests + deploy) ourselves.
           gh workflow run ci.yml -R "$REPO" --ref "$base"
+          if [ "$default" != "$base" ] && [ "$base" = "main" ]; then gh workflow run ci.yml -R "$REPO" --ref "$default"; fi

@@ -5,7 +5,7 @@
 | Workflow | File | Trigger | Steps | Blocks merges |
 |---|---|---|---|---|
 | **CI → Offline test gate** | `.github/workflows/ci.yml` | Every push and pull request; manual | `npm ci` → install Chromium → tide data check (`--warn-days 0`) → `npm test` → `validate_ics.py`; uploads `playwright-report` on failure | Yes |
-| **CI → Deploy to GitHub Pages** | `.github/workflows/ci.yml` | Push or manual run on **`main`**, after the gate | Copies `index.html`, `tides-data.js`, `manifest.webmanifest`, `sw.js` and `icons/` to `_site`, deploys, then fetches them from the live URL | — |
+| **CI → Deploy to GitHub Pages** | `.github/workflows/ci.yml` | Manual run on the **default branch**, or started by Auto-merge after a merge, after the gate | Copies `index.html`, `tides-data.js`, `manifest.webmanifest`, `sw.js` and `icons/` to `_site`, deploys, then fetches them from the live URL | — |
 | **Live canary** | `.github/workflows/live.yml` | Daily 17:23 UTC (6:23am NZDT / 5:23am NZST); manual | Tide data check (`--warn-days 90`) → live Playwright suite (2 retries) | No |
 | **Auto-merge** | `.github/workflows/auto-merge.yml` | When a CI run on a PR succeeds | Merges the PR if it's still at the tested commit, then starts CI on the base branch | — |
 | **Dependabot** | `.github/dependabot.yml` | Monthly | Grouped PRs (into `main`) for GitHub Actions and npm test tools | — |
@@ -22,7 +22,8 @@ Permissions: workflows default to `contents: read`; the deploy job adds `pages: 
 1. CI runs on the PR (the **Offline test gate**).
 2. When CI finishes successfully, the Auto-merge workflow checks the PR is still at the commit that was tested, is not
    a draft and comes from this repo — then merges it (merge commit) into its base branch.
-3. It then starts CI on the base branch, which re-runs the tests and deploys if that branch is the default.
+3. If the PR went into `main` and `main` is not the default branch, it fast-forwards the default branch to `main`.
+4. It then starts CI on `main` and on the default branch; the default-branch run re-tests and **deploys**.
 
 A red or cancelled run never merges. Pushing a new commit to a PR restarts the cycle. To hold a PR back, mark it as a
 **draft**. Dependabot PRs follow the same rule (they target `main`).
@@ -37,7 +38,7 @@ merged automatically, merge it by hand or turn on Settings → General → **All
 
 ## One-time setup (repo owner)
 
-1. **Pages (required):** Settings → Pages → Source → **GitHub Actions**. Until this is set, the deploy job fails on `main`.
+1. **Pages (required):** Settings → Pages → Source → **GitHub Actions**. Until this is set, the deploy job fails.
 2. **Default branch (recommended):** Settings → General → Default branch → `main`, so new branches and PRs start from it.
 3. **Branch protection (recommended):** Settings → Branches → rule for `main` requiring the **Offline test gate** check.
 
@@ -53,7 +54,9 @@ The site is published at https://cleevedennis.github.io/weather-wahine/.
 | Canary: a beach doesn't load | Open-Meteo outage or rate limit (HTTP 429) | Re-run once. Usually clears on its own. |
 | Canary: "hourly weather fields present" / "wave heights" fails | Open-Meteo renamed or dropped a field | Check the Open-Meteo docs; update `fetchData()` / `analyse()` and the mocks. |
 | Canary: implausible tide gaps or highs per day | Model data problem, or LINZ offsets entered wrongly | Compare the beach's times with the LINZ tables. |
-| Deploy job fails ("Get Pages site failed" / 404) | Pages source not set to GitHub Actions | Settings → Pages → Source → GitHub Actions, then re-run CI on `main`. |
+| Deploy job fails ("Get Pages site failed" / 404) | Pages source not set to GitHub Actions | Settings → Pages → Source → GitHub Actions, then re-run CI on the default branch. |
+| Deploy job fails in seconds without running | The github-pages environment only allows the default branch, and the run was on another branch | Run CI on the default branch (Actions → CI → Run workflow). |
+| Auto-merge: "Update is not a fast forward" | The default branch has commits that aren't in `main` | Open a PR from the default branch into `main` so they meet again. |
 | Deploy smoke check fails | Pages slow to publish | Re-run the job. |
 | Dependabot PR fails CI | A tool update changed behaviour | Read the failing test; pin the previous version if needed. |
 | Installed app shows an old version | Service worker served a cached copy while offline or on slow signal | Open it once with good signal; if `SHELL` in `sw.js` changed, make sure `VERSION` was bumped. |
