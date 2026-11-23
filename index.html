@@ -234,21 +234,25 @@
 
 <script src="tides-data.js"></script>
 <script>
-// West Coast beaches, south to north (Huia Bay is inside the Manukau Harbour).
+// Beaches, grouped as shown in the picker. Coordinates are approximate (weather is forecast on a ~1–2 km grid).
 // linz: official LINZ secondary-port differences from Onehunga, in minutes
 //   (hw = high-water time difference, lw = low-water; e.g. -1h 34m → -94).
 //   When set, tides come from the bundled LINZ tables (tides-data.js) instead of the Open-Meteo model.
-// harbour: true = inside the Manukau, where the model is wrong — only shown once linz.hw is filled in.
+// harbour: true = inside the Manukau Harbour. The Open-Meteo tide and swell models are wrong there, so these
+//   beaches show weather only, with tides marked "not set up", until linz.hw is filled in.
 const ALL_LOCATIONS = [
-  { name: "Huia Bay", lat: -37.000, lon: 174.570, harbour: true, linz: { hw: null, lw: null } },
-  { name: "Whatipu", lat: -37.044, lon: 174.507, linz: { hw: null, lw: null } },
-  { name: "Karekare", lat: -36.988, lon: 174.476, linz: { hw: null, lw: null } },
-  { name: "Piha", lat: -36.954, lon: 174.469, linz: { hw: null, lw: null } },
-  { name: "Te Henga", lat: -36.887, lon: 174.442, linz: { hw: null, lw: null } },
-  { name: "Muriwai", lat: -36.829, lon: 174.424, linz: { hw: null, lw: null } },
+  { name: "Huia Domain", group: "Manukau Harbour", lat: -37.003, lon: 174.566, harbour: true, linz: { hw: null, lw: null } },
+  { name: "Kaitarakihi", group: "Manukau Harbour", lat: -37.008, lon: 174.583, harbour: true, linz: { hw: null, lw: null } },
+  { name: "Cornwallis", group: "Manukau Harbour", lat: -37.012, lon: 174.600, harbour: true, linz: { hw: null, lw: null } },
+  { name: "Whatipu", group: "West Coast", lat: -37.044, lon: 174.507, linz: { hw: null, lw: null } },
+  { name: "Karekare", group: "West Coast", lat: -36.988, lon: 174.476, linz: { hw: null, lw: null } },
+  { name: "Piha", group: "West Coast", lat: -36.954, lon: 174.469, linz: { hw: null, lw: null } },
+  { name: "Te Henga", group: "West Coast", lat: -36.887, lon: 174.442, linz: { hw: null, lw: null } },
+  { name: "Muriwai", group: "West Coast", lat: -36.829, lon: 174.424, linz: { hw: null, lw: null } },
 ];
 const usesLinz = (l) => l.linz?.hw != null && !!window.LINZ_TIDES;
-const LOCATIONS = ALL_LOCATIONS.filter((l) => !l.harbour || usesLinz(l));
+const tidesPending = (l) => l.harbour && !usesLinz(l);   // harbour beach still waiting for its LINZ offset
+const LOCATIONS = ALL_LOCATIONS;
 const DEFAULT_LOC = "Piha";
 const TZ = "Pacific/Auckland";
 const DAYS = 16;
@@ -329,12 +333,14 @@ function findHighTides(times, levels) {
 async function fetchData(loc) {
   const q = `latitude=${loc.lat}&longitude=${loc.lon}&timezone=${encodeURIComponent(TZ)}&forecast_days=${DAYS}`;
   const linz = usesLinz(loc);
+  // Harbour beaches skip the marine feed: its tides and open-ocean swell don't apply inside the Manukau.
   const [m, w] = await Promise.all([
-    fetch(`https://marine-api.open-meteo.com/v1/marine?${q}&hourly=${linz ? "" : "sea_level_height_msl,"}wave_height&cell_selection=sea`).catch(() => null),
+    loc.harbour ? Promise.resolve(null)
+      : fetch(`https://marine-api.open-meteo.com/v1/marine?${q}&hourly=${linz ? "" : "sea_level_height_msl,"}wave_height&cell_selection=sea`).catch(() => null),
     fetch(`https://api.open-meteo.com/v1/forecast?${q}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunshine_duration,uv_index_max&hourly=weather_code,temperature_2m,precipitation_probability,cloud_cover`),
   ]);
   // Waves are optional; the marine feed is only essential when it is also the tide source.
-  if (!linz && !m?.ok) throw new Error(`tide data unavailable (${m ? m.status : "offline"})`);
+  if (!linz && !loc.harbour && !m?.ok) throw new Error(`tide data unavailable (${m ? m.status : "offline"})`);
   if (!w.ok) throw new Error(`weather unavailable (${w.status})`);
   // Set by the service worker when it answered from its offline copy.
   const savedAt = [w, m].map((r) => r?.ok && r.headers.get("sw-fetched-at")).filter(Boolean).sort()[0] || null;
@@ -363,6 +369,7 @@ function linzTides(loc, dates) {
 }
 function tideData({ loc, marine, weather }) {
   if (usesLinz(loc)) return linzTides(loc, weather.daily.time);
+  if (tidesPending(loc)) return { highs: [], time: [], level: [], source: "pending" };
   const time = marine.hourly.time, level = marine.hourly.sea_level_height_msl;
   return { highs: findHighTides(time, level), time, level, source: "model" };
 }
@@ -428,7 +435,9 @@ function renderHero() {
 function renderBest() {
   const best = state.days.map((d, i) => ({ ...d, i })).filter((d) => d.both);
   const lastTide = [...state.days].reverse().find((d) => d.hasTide);
-  const notice = lastTide && lastTide !== state.days.at(-1)
+  const notice = state.tideSource === "pending"
+    ? `<div class="notice">Tide times for ${currentLoc().name} aren't set up yet — they need its official LINZ tide offset. Sunny days still show.</div>`
+    : lastTide && lastTide !== state.days.at(-1)
     ? `<div class="notice">Tide forecast runs to ${fmtDate(lastTide.date, { weekday: "short", day: "numeric", month: "short" })}; later days can't be checked for tides yet.</div>` : "";
   $("bestCount").textContent = best.length ? `${best.length} day${best.length > 1 ? "s" : ""}` : "";
   $("best").innerHTML = best.length
@@ -445,7 +454,13 @@ function renderTide() {
   const d = state.days[state.sel];
   const svg = $("tideSvg");
   $("tideDay").textContent = state.sel === 0 ? "Today" : fmtDate(d.date, { weekday: "short", day: "numeric", month: "short" });
-  if (!d.hasTide) { svg.innerHTML = `<text x="170" y="65" text-anchor="middle">Tide forecast doesn't reach this far ahead yet</text>`; $("tideHighs").textContent = ""; $("tideWin").textContent = ""; return; }
+  if (!d.hasTide) {
+    const msg = state.tideSource === "pending" ? "Tide times for this beach aren't set up yet" : "Tide forecast doesn't reach this far ahead yet";
+    svg.innerHTML = `<text x="170" y="65" text-anchor="middle">${msg}</text>`;
+    $("tideHighs").textContent = ""; $("tideWin").textContent = "";
+    $("tideSrc").textContent = state.tideSource === "pending" ? "Needs its LINZ tide offset (harbour tides differ from the coast)" : "";
+    return;
+  }
   const W = 340, H = 130, top = 22, bot = 108;
   const all = state.days.flatMap((x) => x.curve.map((p) => p[1]));
   const lo = Math.min(...all), hi = Math.max(...all);
@@ -618,7 +633,11 @@ async function update(force) {
   }
 }
 
-LOCATIONS.forEach((l) => $("loc").add(new Option(l.name, l.name)));
+for (const group of [...new Set(LOCATIONS.map((l) => l.group))]) {
+  const og = document.createElement("optgroup"); og.label = group;
+  LOCATIONS.filter((l) => l.group === group).forEach((l) => og.appendChild(new Option(l.name, l.name)));
+  $("loc").appendChild(og);
+}
 $("loc").value = DEFAULT_LOC;
 loadPrefs();
 $("loc").addEventListener("change", () => { state.sel = 0; update(false); });

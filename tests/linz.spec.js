@@ -18,22 +18,38 @@ function csvHighs(file) {
   return ev.filter((e, i) => [ev[i - 1], ev[i + 1]].every((n) => !n || e[1] > n[1])).map((e) => e[0]);
 }
 
-test('beaches without LINZ offsets use the model; Huia Bay stays hidden', async ({ page }) => {
+test('coast beaches without LINZ offsets use the model; picker is grouped', async ({ page }) => {
   await openPage(page);
-  await expect(page.locator('#loc option')).toHaveText(['Whatipu', 'Karekare', 'Piha', 'Te Henga', 'Muriwai']);
+  await expect(page.locator('#loc optgroup')).toHaveCount(2);
+  await expect(page.locator('#loc optgroup[label="Manukau Harbour"] option')).toHaveText(['Huia Domain', 'Kaitarakihi', 'Cornwallis']);
+  await expect(page.locator('#loc optgroup[label="West Coast"] option')).toHaveText(['Whatipu', 'Karekare', 'Piha', 'Te Henga', 'Muriwai']);
   expect(await page.evaluate(() => state.tideSource)).toBe('model');
 });
 
-test('LINZ offsets: times = Onehunga + offset, full coverage, Huia appears, no model call', async ({ page }) => {
-  const { requests } = await openPage(page, { linz: { Piha: { hw: -100 }, 'Huia Bay': { hw: -40, lw: -45 } }, weather: weatherDaily(16) });
-  await expect(page.locator('#loc option').first()).toHaveText('Huia Bay');
+test('harbour beaches without LINZ offsets show weather only, tides marked not set up', async ({ page }) => {
+  const { requests, errors } = await openPage(page, { weather: weatherDaily(16) });
+  requests.length = 0;
+  await page.selectOption('#loc', 'Kaitarakihi');
+  await page.waitForFunction(() => state.key === 'Kaitarakihi');
+  expect(requests.some((u) => u.includes('marine'))).toBe(false);          // no model tides or offshore swell
+  expect(await page.evaluate(() => state.tideSource)).toBe('pending');
+  const d = await days(page);
+  expect(d.every((x) => !x.tide && !x.hasTide && x.wave == null)).toBe(true);
+  expect(d.some((x) => x.sunny)).toBe(true);                               // weather still works
+  await expect(page.locator('#best')).toContainText("Tide times for Kaitarakihi aren't set up yet");
+  await expect(page.locator('#tideSvg')).toContainText("aren't set up yet");
+  expect(errors).toEqual([]);
+});
+
+test('LINZ offsets: times = Onehunga + offset, full coverage, harbour beach gets tides, no model call', async ({ page }) => {
+  const { requests } = await openPage(page, { linz: { Piha: { hw: -100 }, 'Huia Domain': { hw: -40, lw: -45 } }, weather: weatherDaily(16) });
   const d = await days(page);
   expect(d[0].highs).toEqual([8 * 60 + 29, 20 * 60 + 46]);       // Onehunga 10:09 & 22:26 − 1h40m
   expect(d.every((x) => x.hasTide)).toBe(true);
   expect(requests.filter((u) => u.includes('sea_level_height_msl'))).toHaveLength(0);
   await expect(page.locator('#tideSrc')).toContainText('Official LINZ prediction (Onehunga −1h 40m)');
-  await page.selectOption('#loc', 'Huia Bay');
-  await page.waitForFunction(() => state.key === 'Huia Bay');
+  await page.selectOption('#loc', 'Huia Domain');
+  await page.waitForFunction(() => state.key === 'Huia Domain');
   expect((await days(page))[0].highs).toEqual([9 * 60 + 29, 21 * 60 + 46]);
 });
 

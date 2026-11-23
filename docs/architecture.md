@@ -76,7 +76,8 @@ For each forecast date:
 | `BIG_SWELL_M` | `2.5` | Wave height (m) that triggers the swell warning |
 | `TZ` | `Pacific/Auckland` | Time zone for API requests and the calendar export |
 
-`LOCATIONS` (what the beach picker shows) is `ALL_LOCATIONS` minus harbour beaches that have no LINZ offset.
+The picker shows every beach in `ALL_LOCATIONS`, grouped by `group`. Harbour beaches without a LINZ offset
+(`tidesPending()`) skip the marine feed and return tide source `pending`: weather only, tides marked "not set up yet".
 
 ## State and storage
 
