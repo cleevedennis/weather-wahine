@@ -219,14 +219,15 @@
 </main>
 
 <script>
+// West Coast beaches, roughly in driving order from Huia
 const LOCATIONS = [
-  { name: "Piha", lat: -36.954, lon: 174.469 },
+  { name: "Whatipu", lat: -37.044, lon: 174.507 },
   { name: "Karekare", lat: -36.988, lon: 174.476 },
+  { name: "Piha", lat: -36.954, lon: 174.469 },
   { name: "Te Henga", lat: -36.887, lon: 174.442 },
   { name: "Muriwai", lat: -36.829, lon: 174.424 },
-  { name: "Whatipu", lat: -37.044, lon: 174.507 },
-  { name: "Te Atatū", lat: -36.835, lon: 174.640 },
 ];
+const DEFAULT_LOC = "Piha";
 const TZ = "Pacific/Auckland";
 const DAYS = 16;
 const WMO = {
@@ -247,6 +248,7 @@ const $ = (id) => document.getElementById(id);
 const state = { data: null, key: null, days: [], sel: 0 };
 
 /* ---------- prefs ---------- */
+const currentLocValid = () => LOCATIONS.some((l) => l.name === $("loc").value);
 const PREF_IDS = ["loc", "from", "to", "minTemp", "maxRain"];
 function savePrefs() {
   try { localStorage.setItem("ww-prefs", JSON.stringify(Object.fromEntries(PREF_IDS.map((k) => [k, $(k).value])))); } catch (e) {}
@@ -255,6 +257,7 @@ function loadPrefs() {
   try {
     const p = JSON.parse(localStorage.getItem("ww-prefs") || "null");
     if (p) for (const k of PREF_IDS) if (p[k] != null && p[k] !== "") $(k).value = p[k];
+    if (!currentLocValid()) $("loc").value = DEFAULT_LOC; // old saved value (list position or removed beach)
   } catch (e) {}
 }
 
@@ -487,7 +490,7 @@ function toICS(days, locName) {
 }
 
 /* ---------- main ---------- */
-const currentLoc = () => LOCATIONS[Number($("loc").value)] || LOCATIONS[0];
+const currentLoc = () => LOCATIONS.find((l) => l.name === $("loc").value) || LOCATIONS.find((l) => l.name === DEFAULT_LOC);
 async function update(force) {
   const loc = currentLoc();
   savePrefs();
@@ -508,7 +511,8 @@ async function update(force) {
   }
 }
 
-LOCATIONS.forEach((l, i) => $("loc").add(new Option(l.name, i)));
+LOCATIONS.forEach((l) => $("loc").add(new Option(l.name, l.name)));
+$("loc").value = DEFAULT_LOC;
 loadPrefs();
 $("loc").addEventListener("change", () => { state.sel = 0; update(false); });
 for (const id of ["from", "to", "minTemp", "maxRain"]) $(id).addEventListener("change", () => update(false));

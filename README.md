@@ -6,7 +6,7 @@ A single-page calendar for West Auckland beaches that highlights:
 - ☀️ **Sunny days at 20°C or warmer** (clear / mainly clear / partly cloudy, low rain chance)
 - ★ **Days with both**
 
-Covers the next 16 days for Piha, Karekare, Te Henga/Bethells, Muriwai, Whatipu and Te Atatū.
+Covers the next 16 days for the West Coast beaches: Whatipu, Karekare, Piha, Te Henga (Bethells) and Muriwai.
 You can download the matching days as an `.ics` file to import into Outlook, Google or Apple Calendar.
 
 ## Use it
