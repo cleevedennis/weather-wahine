@@ -1,5 +1,15 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- Home Screen web app: sun (te rā) app icon, web manifest (installs as "Weather Wahine"), full-screen launch.
+- Offline support via a service worker: opens without signal and shows the last saved forecast per beach, labelled
+  with when it was saved; past days are dropped.
+- Auto-merge workflow: every PR merges as soon as CI passes on its latest commit; Dependabot PRs target `main`.
+- Tests for the manifest, icons and offline behaviour; the test clock is pinned so the gate gives the same result
+  on any date.
+
 ## 2026-11-23
 
 ### Added

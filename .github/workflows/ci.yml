@@ -55,7 +55,8 @@ jobs:
     name: Deploy to GitHub Pages
     needs: test
     # Only from the default branch, and only once the owner has switched Pages on (repo variable PAGES_ENABLED=true).
-    if: github.event_name == 'push' && github.ref_name == github.event.repository.default_branch && vars.PAGES_ENABLED == 'true'
+    # workflow_dispatch covers merges made by the Auto-merge workflow, which starts CI on the base branch afterwards.
+    if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref_name == github.event.repository.default_branch && vars.PAGES_ENABLED == 'true'
     runs-on: ubuntu-latest
     timeout-minutes: 10
     permissions:
@@ -70,7 +71,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Assemble site (only the files the page needs)
-        run: mkdir _site && cp index.html tides-data.js _site/
+        run: mkdir _site && cp -r index.html tides-data.js manifest.webmanifest sw.js icons _site/
       - uses: actions/configure-pages@v5
       - uses: actions/upload-pages-artifact@v3
       - id: deploy
@@ -78,9 +79,10 @@ jobs:
       - name: Smoke-check the live site
         run: |
           url="${{ steps.deploy.outputs.page_url }}"
-          for f in index.html tides-data.js; do
-            for i in 1 2 3 4 5; do curl -fsS "$url$f" -o "/tmp/$f" && break; sleep 10; done
+          for f in index.html tides-data.js manifest.webmanifest sw.js icons/apple-touch-icon.png; do
+            for i in 1 2 3 4 5; do curl -fsS "$url$f" -o "/tmp/$(basename $f)" && break; sleep 10; done
           done
           grep -q "Weather Wahine" /tmp/index.html
           grep -q "LINZ_TIDES" /tmp/tides-data.js
+          grep -q "standalone" /tmp/manifest.webmanifest
           echo "Live at $url"

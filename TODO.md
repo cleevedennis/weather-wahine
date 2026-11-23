@@ -4,7 +4,9 @@
 - [ ] **LINZ secondary-port differences.** From linz.govt.nz → Tides and tidal streams → Tide predictions →
       Secondary ports, copy the high-water (and low-water) time difference and reference port for:
       Huia, Manukau Harbour Entrance (Bar/Heads), and any of Piha, Te Henga, Muriwai.
-- [ ] **Check on iPhone Safari:** frosted glass, time pickers, beach dropdown, .ics import, Add to Home Screen.
+- [ ] **Check on iPhone Safari:** frosted glass, time pickers, beach dropdown, .ics import.
+- [ ] **Install on iPhone** (once Pages is live): Add to Home Screen → check the sun icon and "Weather Wahine" label (iOS may shorten it), full-screen
+      launch, then turn on Aeroplane Mode and reopen — it should show the saved forecast with the yellow offline note.
 - [ ] **Te reo & motif check by a speaker:** Ngā rā pai, Te tai, Maramataka (lunar-calendar nuance),
       Matapae huarere, Tautuhinga; koru / niho taniwha / poutama use.
 
@@ -23,5 +25,7 @@
 - [ ] Settings → Branches: protect `main`, require the "Offline test gate" check
 
 ## Later
+- [ ] Optional, only if wanted: App Store version (Capacitor + widget/notifications/EventKit, Apple Developer
+      account, Mac or Xcode Cloud) — see docs/decisions.md #11.
 - [ ] Before end of 2027: add Onehunga 2028 LINZ table (steps in docs/tides.md). The daily canary will warn 90 days ahead.
 - [ ] Note: re-importing the .ics updates matching days, but days that stop qualifying stay in your calendar — delete old ones.

@@ -6,6 +6,12 @@
 <meta name="theme-color" content="#0d3b2e">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Weather Wahine">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="description" content="West Coast high tides and sunny days, West Auckland">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
 <title>Weather Wahine</title>
 <style>
   :root {
@@ -146,6 +152,7 @@
 
   .status { text-align: center; color: var(--muted); font-size: .85rem; margin: 2px 0 14px; min-height: 1.2em; }
   .status.error { color: #ffd0d0; }
+  .status.offline { color: var(--sun); }
   footer { font-size: .75rem; color: var(--muted); text-align: center; padding: 10px 8px 0; line-height: 1.5; }
   footer a { color: var(--bone); }
   footer .poutama { margin: 0 -16px 14px; }
@@ -329,7 +336,9 @@ async function fetchData(loc) {
   // Waves are optional; the marine feed is only essential when it is also the tide source.
   if (!linz && !m?.ok) throw new Error(`tide data unavailable (${m ? m.status : "offline"})`);
   if (!w.ok) throw new Error(`weather unavailable (${w.status})`);
-  return { loc, marine: m?.ok ? await m.json() : null, weather: await w.json() };
+  // Set by the service worker when it answered from its offline copy.
+  const savedAt = [w, m].map((r) => r?.ok && r.headers.get("sw-fetched-at")).filter(Boolean).sort()[0] || null;
+  return { loc, marine: m?.ok ? await m.json() : null, weather: await w.json(), savedAt };
 }
 
 // Tides from the bundled LINZ tables: shift Onehunga extremes by the beach's secondary-port
@@ -579,6 +588,7 @@ function toICS(days, locName) {
 }
 
 /* ---------- main ---------- */
+const todayNZ = () => new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(new Date()); // YYYY-MM-DD
 const currentLoc = () => LOCATIONS.find((l) => l.name === $("loc").value) || LOCATIONS.find((l) => l.name === DEFAULT_LOC);
 async function update(force) {
   const loc = currentLoc();
@@ -589,10 +599,18 @@ async function update(force) {
       st.textContent = `Updating ${loc.name}…`;
       state.data = await fetchData(loc); state.key = loc.name; state.fetchedAt = Date.now();
     }
-    state.days = analyse(state.data);
+    // Drop days that are already past (an offline copy may be a few days old).
+    state.days = analyse(state.data).filter((d) => d.date >= todayNZ());
+    if (!state.days.length) throw new Error("the saved forecast is too old");
     state.sel = Math.min(state.sel, state.days.length - 1);
     renderAll();
-    st.textContent = `Updated ${new Date().toLocaleTimeString("en-NZ", { hour: "numeric", minute: "2-digit" })}`;
+    const t = (d) => d.toLocaleString("en-NZ", { timeZone: TZ, hour: "numeric", minute: "2-digit", weekday: "short", day: "numeric", month: "short" });
+    if (state.data.savedAt) {
+      st.className = "status offline";
+      st.textContent = `Offline — showing the forecast saved ${t(new Date(state.data.savedAt))}`;
+    } else {
+      st.textContent = `Updated ${new Date().toLocaleTimeString("en-NZ", { hour: "numeric", minute: "2-digit" })}`;
+    }
   } catch (e) {
     st.className = "status error";
     st.textContent = `Couldn't load the forecast — ${e.message}. Tap Refresh to try again.`;
@@ -606,6 +624,10 @@ loadPrefs();
 $("loc").addEventListener("change", () => { state.sel = 0; update(false); });
 for (const id of ["from", "to", "minTemp", "maxRain"]) $(id).addEventListener("change", () => update(false));
 $("refresh").addEventListener("click", () => update(true));
+// Offline support for the Home Screen app (needs http/https; skipped when opened from disk).
+if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
+  navigator.serviceWorker.register("sw.js").catch(() => {});
+}
 $("ics").addEventListener("click", () => {
   if (!state.days.length) return;
   const loc = currentLoc();

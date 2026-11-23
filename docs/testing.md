@@ -14,7 +14,14 @@ Setup: `npm ci && npx playwright install chromium`; for the calendar validator `
 Tests run in Chromium with an iPhone 15 Pro profile and are served over HTTP by `python3 -m http.server`
 (the same way GitHub Pages serves the site) — see `playwright.config.js`.
 
-## What the gate covers (24 tests)
+Two things keep the gate deterministic:
+
+- **Pinned clock:** `openPage()` fixes the browser's time to 9am NZDT on 23 Nov 2026 (the first mock day), so results
+  don't change with the real date.
+- **Service workers blocked** by default, so mocked network calls can't be bypassed. `tests/pwa.spec.js` enables them
+  and mocks at the browser-context level instead, which also catches the worker's own requests.
+
+## What the gate covers (27 tests)
 
 **Logic** (`tests/logic.spec.js`)
 - High-tide times within 3 minutes on a known curve, including a tide just before midnight
@@ -31,6 +38,13 @@ Tests run in Chromium with an iPhone 15 Pro profile and are served over HTTP by 
 - LINZ beach still works when the swell feed is down
 - **Two-year back-test:** every LINZ high tide in `data/*.csv` reproduced to the minute at offsets −100, −40 and +30,
   including daylight-saving changeover days
+
+**Home Screen app** (`tests/pwa.spec.js`)
+- Manifest linked and valid (name, standalone, start URL, scope); every icon's PNG matches its declared size;
+  maskable icon present; 180px Apple touch icon; iOS meta tags present
+- Offline: after one online load, an offline reload shows the saved forecast with the *Offline — showing the
+  forecast saved* label; back online it refreshes
+- An offline copy three days old drops the past days and starts at the real today
 
 **UI** (`tests/ui.spec.js`)
 - All beaches load distinct coordinates; beach persists by name; old index-based saves fall back to Piha
@@ -50,8 +64,10 @@ Tests run in Chromium with an iPhone 15 Pro profile and are served over HTTP by 
 - `openPage(page, { marine, weather, marineStatus, weatherStatus, linz })` — mocks the APIs, blocks all other
   external requests, and can inject LINZ offsets into named beaches without editing `index.html`
 - `days(page)` — a compact view of `state.days` for assertions
+- `MOCK_NOW` — the pinned clock time
 
-Mock dates start 23 Nov 2026; LINZ tests rely on that date being inside the bundled data.
+Mock dates start 23 Nov 2026; LINZ tests rely on that date being inside the bundled data. When the bundled LINZ data
+no longer covers it, move `START`/`MOCK_NOW` in `tests/helpers.js` and the expected Onehunga times in `tests/linz.spec.js`.
 
 ## Proving the tests bite (mutation check)
 
