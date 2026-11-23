@@ -39,9 +39,10 @@ all network calls; a daily canary checks the real APIs and the LINZ expiry witho
 The calendar export is validated by the Python `icalendar` library, and LINZ handling is back-tested against the raw
 CSVs — so correctness doesn't rest only on our own code's view of itself.
 
-### 10. Deploy only from the default branch, opt-in via a variable
-`main` holds what's published. The deploy job requires `PAGES_ENABLED=true`, so CI stays green until the owner has
-switched Pages on.
+### 10. Deploy from `main`
+`main` holds what's published. Originally the deploy followed the default branch and waited for a `PAGES_ENABLED`
+variable, which kept CI green before Pages was set up but needed three settings changes. It now deploys from `main`
+directly, so the only setting needed is the Pages source.
 
 ### 11. A Home Screen web app instead of an App Store app
 For personal use, installing from Safari gives an icon, full-screen launch and offline use for free, with no Mac,

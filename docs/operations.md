@@ -5,7 +5,7 @@
 | Workflow | File | Trigger | Steps | Blocks merges |
 |---|---|---|---|---|
 | **CI → Offline test gate** | `.github/workflows/ci.yml` | Every push and pull request; manual | `npm ci` → install Chromium → tide data check (`--warn-days 0`) → `npm test` → `validate_ics.py`; uploads `playwright-report` on failure | Yes |
-| **CI → Deploy to GitHub Pages** | `.github/workflows/ci.yml` | Push to the **default branch**, after the gate, when repo variable `PAGES_ENABLED` is `true` | Copies `index.html`, `tides-data.js`, `manifest.webmanifest`, `sw.js` and `icons/` to `_site`, deploys, then fetches them from the live URL | — |
+| **CI → Deploy to GitHub Pages** | `.github/workflows/ci.yml` | Push or manual run on **`main`**, after the gate | Copies `index.html`, `tides-data.js`, `manifest.webmanifest`, `sw.js` and `icons/` to `_site`, deploys, then fetches them from the live URL | — |
 | **Live canary** | `.github/workflows/live.yml` | Daily 17:23 UTC (6:23am NZDT / 5:23am NZST); manual | Tide data check (`--warn-days 90`) → live Playwright suite (2 retries) | No |
 | **Auto-merge** | `.github/workflows/auto-merge.yml` | When a CI run on a PR succeeds | Merges the PR if it's still at the tested commit, then starts CI on the base branch | — |
 | **Dependabot** | `.github/dependabot.yml` | Monthly | Grouped PRs (into `main`) for GitHub Actions and npm test tools | — |
@@ -36,12 +36,11 @@ merged automatically, merge it by hand or turn on Settings → General → **All
 
 ## One-time setup (repo owner)
 
-1. **Default branch:** Settings → General → Default branch → `main` (deploys follow the default branch).
-2. **Pages:** Settings → Pages → Source → **GitHub Actions**.
-3. **Switch deploys on:** Settings → Secrets and variables → Actions → Variables → `PAGES_ENABLED` = `true`.
-4. **Branch protection:** Settings → Branches → rule for `main` requiring the **Offline test gate** status check.
+1. **Pages (required):** Settings → Pages → Source → **GitHub Actions**. Until this is set, the deploy job fails on `main`.
+2. **Default branch (recommended):** Settings → General → Default branch → `main`, so new branches and PRs start from it.
+3. **Branch protection (recommended):** Settings → Branches → rule for `main` requiring the **Offline test gate** check.
 
-Until step 3 the deploy job shows as *skipped*, which is expected.
+The site is published at https://cleevedennis.github.io/weather-wahine/.
 
 ## Runbook
 
@@ -53,7 +52,8 @@ Until step 3 the deploy job shows as *skipped*, which is expected.
 | Canary: a beach doesn't load | Open-Meteo outage or rate limit (HTTP 429) | Re-run once. Usually clears on its own. |
 | Canary: "hourly weather fields present" / "wave heights" fails | Open-Meteo renamed or dropped a field | Check the Open-Meteo docs; update `fetchData()` / `analyse()` and the mocks. |
 | Canary: implausible tide gaps or highs per day | Model data problem, or LINZ offsets entered wrongly | Compare the beach's times with the LINZ tables. |
-| Deploy smoke check fails | Pages not enabled, or slow to publish | Check Settings → Pages; re-run the job. |
+| Deploy job fails ("Get Pages site failed" / 404) | Pages source not set to GitHub Actions | Settings → Pages → Source → GitHub Actions, then re-run CI on `main`. |
+| Deploy smoke check fails | Pages slow to publish | Re-run the job. |
 | Dependabot PR fails CI | A tool update changed behaviour | Read the failing test; pin the previous version if needed. |
 | Installed app shows an old version | Service worker served a cached copy while offline or on slow signal | Open it once with good signal; if `SHELL` in `sw.js` changed, make sure `VERSION` was bumped. |
 
