@@ -272,6 +272,14 @@ function loadPrefs() {
 }
 
 /* ---------- helpers ---------- */
+// Read settings with safe fallbacks; a reversed window (e.g. 3pm → 11am) is swapped.
+function settings() {
+  const t = (id, def) => (/^\d{1,2}:\d{2}$/.test($(id).value) ? toMin($(id).value) : toMin(def));
+  const n = (id, def) => { const v = parseFloat($(id).value); return Number.isFinite(v) ? v : def; };
+  let from = t("from", "11:00"), to = t("to", "15:00");
+  if (from > to) [from, to] = [to, from];
+  return { from, to, minTemp: n("minTemp", 20), maxRain: n("maxRain", 30) };
+}
 const toMin = (hhmm) => { const [h, m] = String(hhmm).split(":").map(Number); return h * 60 + (m || 0); };
 const fmtTime = (mins) => {
   mins = Math.round(mins) % 1440;
@@ -343,8 +351,7 @@ function tideData({ loc, marine, weather }) {
 
 function analyse(data) {
   const { weather } = data;
-  const from = toMin($("from").value || "11:00"), to = toMin($("to").value || "15:00");
-  const minTemp = Number($("minTemp").value), maxRain = Number($("maxRain").value);
+  const { from, to, minTemp, maxRain } = settings();
   const td = tideData(data);
   state.tideSource = td.source;
   const ht = td.time, hl = td.level, tides = td.highs;
@@ -396,7 +403,7 @@ function renderBest() {
         <span class="when">${d.i === 0 ? "Today" : fmtDate(d.date, { weekday: "short", day: "numeric", month: "short" })}</span>
         <span class="what">${wmo(d.code)[1]} High tide ${d.inWindow.map((t) => fmtTime(t.mins)).join(" & ")}</span>
         <span class="t">${Math.round(d.tmax)}°</span></div>`).join("")
-    : `<div class="empty-note">No days with both a ${fmtTime(toMin($("from").value))}–${fmtTime(toMin($("to").value))} high tide and sunny weather in the next ${state.days.length} days.</div>`;
+    : `<div class="empty-note">No days with both a ${fmtTime(settings().from)}–${fmtTime(settings().to)} high tide and sunny weather in the next ${state.days.length} days.</div>`;
   $("best").insertAdjacentHTML("beforeend", notice);
 }
 
@@ -418,7 +425,7 @@ function renderTide() {
   }
   const last = pts[pts.length - 1];
   const area = `${path} L${last[0]},${bot} L${pts[0][0]},${bot} Z`;
-  const wx1 = x(toMin($("from").value)), wx2 = x(toMin($("to").value));
+  const wx1 = x(settings().from), wx2 = x(settings().to);
   const hours = [0, 6, 12, 18].map((h) => `<text x="${x(h * 60) + (h ? 0 : 2)}" y="${H - 6}" text-anchor="${h ? "middle" : "start"}">${h === 0 ? "12am" : h === 12 ? "12pm" : fmtTime(h * 60).replace(":00", "")}</text>`).join("");
   const highs = d.highs.map((t) => {
     const cx = x(t.mins), cy = y(t.height), inw = d.inWindow.includes(t);
@@ -542,7 +549,7 @@ async function update(force) {
   try {
     if (force || state.key !== loc.name) {
       st.textContent = `Updating ${loc.name}…`;
-      state.data = await fetchData(loc); state.key = loc.name;
+      state.data = await fetchData(loc); state.key = loc.name; state.fetchedAt = Date.now();
     }
     state.days = analyse(state.data);
     state.sel = Math.min(state.sel, state.days.length - 1);
@@ -568,6 +575,12 @@ $("ics").addEventListener("click", () => {
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
   a.download = `weather-wahine-${loc.name.split(" ")[0].toLowerCase()}.ics`; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+});
+// Home-screen apps resume old pages: refetch if the data is over an hour old or from a previous day.
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState !== "visible" || !state.fetchedAt) return;
+  const stale = Date.now() - state.fetchedAt > 3600e3 || new Date(state.fetchedAt).toDateString() !== new Date().toDateString();
+  if (stale) { state.sel = 0; update(true); }
 });
 update(false);
 </script>
