@@ -1,5 +1,6 @@
 // Shared mock data and page helpers for the offline test gate.
 const START = Date.UTC(2026, 10, 23);
+const MOCK_NOW = '2026-11-23T09:00:00+13:00';   // 9am NZDT on the first mock day
 const isoH = (h) => new Date(START + h * 3600e3).toISOString().slice(0, 16);
 const isoD = (i) => new Date(START + i * 864e5).toISOString().slice(0, 10);
 
@@ -58,6 +59,8 @@ async function openPage(page, { marine = marineSine(), weather = weatherDaily(),
       return r.fulfill({ body, contentType: 'text/html' });
     });
   }
+  // Pin the clock to the first mock day so the gate gives the same result on any date.
+  await page.clock.setFixedTime(new Date(MOCK_NOW));
   await page.goto('/index.html');
   await page.waitForFunction(() => /Updated|Couldn't/.test(document.getElementById('status').textContent));
   return { errors, requests };
@@ -66,4 +69,4 @@ const days = (page) => page.evaluate(() => state.days.map((d) => ({
   date: d.date, highs: d.highs.map((t) => Math.round(t.mins)), tide: d.tide, sunny: d.sunny, both: d.both,
   hasTide: d.hasTide, hourly: d.hourly, winTemp: d.winTemp, wave: d.wave, bigSwell: d.bigSwell })));
 
-module.exports = { marineSine, marinePeaks, weatherDaily, weatherHourly, openPage, days, isoD };
+module.exports = { MOCK_NOW, marineSine, marinePeaks, weatherDaily, weatherHourly, openPage, days, isoD };

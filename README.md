@@ -17,7 +17,8 @@ offset is entered. Matching days can be downloaded as an `.ics` file for Outlook
 
 - **Use it:** open `index.html` in a browser (works straight from disk), or use the GitHub Pages link once deploys
   are switched on ([operations guide](docs/operations.md#one-time-setup-repo-owner)).
-- **On an iPhone:** open the page in Safari → Share → **Add to Home Screen**.
+- **On an iPhone:** open the page in Safari → Share → **Add to Home Screen**. It installs as **Wahine** with its own
+  icon, opens full screen, and works offline with the last saved forecast ([user guide](docs/user-guide.md#install-on-your-iphone)).
 - No accounts or API keys. Weather and swell come from [Open-Meteo](https://open-meteo.com/); tides from the Open-Meteo
   tide model or official [LINZ](https://www.linz.govt.nz/products-services/tides-and-tidal-streams/tide-predictions) tables.
 
@@ -40,8 +41,11 @@ offset is entered. Matching days can be downloaded as an `.ics` file for Outlook
 ```
 index.html               The whole app: markup, styles and script
 tides-data.js            Bundled LINZ tide predictions (generated — do not edit by hand)
+manifest.webmanifest     Home Screen app name, colours and icons
+sw.js                    Service worker: offline support
+icons/                   App icons (icon.svg is the source; PNGs rendered by tools/render_icons.js)
 data/                    Raw LINZ CSVs the bundle is built from
-tools/                   linz_to_js.py (build tides-data.js), check_tide_data.py, validate_ics.py
+tools/                   linz_to_js.py, check_tide_data.py, validate_ics.py, render_icons.js
 tests/                   Playwright tests (offline gate + live canary)
 .github/                 CI, live canary and Dependabot configuration
 docs/                    Documentation

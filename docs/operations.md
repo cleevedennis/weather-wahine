@@ -5,7 +5,7 @@
 | Workflow | File | Trigger | Steps | Blocks merges |
 |---|---|---|---|---|
 | **CI → Offline test gate** | `.github/workflows/ci.yml` | Every push and pull request; manual | `npm ci` → install Chromium → tide data check (`--warn-days 0`) → `npm test` → `validate_ics.py`; uploads `playwright-report` on failure | Yes |
-| **CI → Deploy to GitHub Pages** | `.github/workflows/ci.yml` | Push to the **default branch**, after the gate, when repo variable `PAGES_ENABLED` is `true` | Copies `index.html` + `tides-data.js` to `_site`, deploys, then fetches both from the live URL | — |
+| **CI → Deploy to GitHub Pages** | `.github/workflows/ci.yml` | Push to the **default branch**, after the gate, when repo variable `PAGES_ENABLED` is `true` | Copies `index.html`, `tides-data.js`, `manifest.webmanifest`, `sw.js` and `icons/` to `_site`, deploys, then fetches them from the live URL | — |
 | **Live canary** | `.github/workflows/live.yml` | Daily 17:23 UTC (6:23am NZDT / 5:23am NZST); manual | Tide data check (`--warn-days 90`) → live Playwright suite (2 retries) | No |
 | **Dependabot** | `.github/dependabot.yml` | Monthly | Grouped PRs for GitHub Actions and npm test tools | — |
 
@@ -38,6 +38,7 @@ Until step 3 the deploy job shows as *skipped*, which is expected.
 | Canary: implausible tide gaps or highs per day | Model data problem, or LINZ offsets entered wrongly | Compare the beach's times with the LINZ tables. |
 | Deploy smoke check fails | Pages not enabled, or slow to publish | Check Settings → Pages; re-run the job. |
 | Dependabot PR fails CI | A tool update changed behaviour | Read the failing test; pin the previous version if needed. |
+| Installed app shows an old version | Service worker served a cached copy while offline or on slow signal | Open it once with good signal; if `SHELL` in `sw.js` changed, make sure `VERSION` was bumped. |
 
 GitHub emails the repo owner when a scheduled workflow fails.
 

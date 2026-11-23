@@ -42,3 +42,10 @@ CSVs — so correctness doesn't rest only on our own code's view of itself.
 ### 10. Deploy only from the default branch, opt-in via a variable
 `main` holds what's published. The deploy job requires `PAGES_ENABLED=true`, so CI stays green until the owner has
 switched Pages on.
+
+### 11. A Home Screen web app instead of an App Store app
+For personal use, installing from Safari gives an icon, full-screen launch and offline use for free, with no Mac,
+Apple Developer account (US$99/year) or App Review. A plain wrapped web page would likely be rejected under App Review
+guideline 4.2 (minimum functionality), Open-Meteo's free API is for non-commercial use, and the `.ics` download doesn't
+work inside an app's web view. If App Store distribution is wanted later, the route is Capacitor plus native features
+(widget, notifications, EventKit calendar), built on a Mac or Xcode Cloud and tested via TestFlight.

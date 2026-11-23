@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024">
+  <defs>
+    <linearGradient id="sky" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#0b3a2c"/><stop offset="1" stop-color="#2f7f5c"/>
+    </linearGradient>
+    <pattern id="poutama" width="96" height="48" patternUnits="userSpaceOnUse">
+      <path d="M0 48V36H12V24H24V12H36V0H48V12H60V24H72V36H84V48Z" fill="#d9734a"/>
+    </pattern>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#sky)"/>
+  <!-- kōwhai sun -->
+  <circle cx="690" cy="330" r="150" fill="#f2c94c"/>
+  <!-- koru -->
+  <path d="M250 900C250 640 360 450 560 450C700 450 740 590 660 650C590 700 515 645 550 585C575 545 625 560 615 600"
+        fill="none" stroke="#f3ead8" stroke-width="44" stroke-linecap="round"/>
+  <!-- tide wave -->
+  <path d="M0 800C120 740 220 740 340 800S560 860 680 800S900 740 1024 800V1024H0Z" fill="#6fd6cf"/>
+  <!-- poutama band -->
+  <rect y="976" width="1024" height="48" fill="url(#poutama)"/>
+</svg>

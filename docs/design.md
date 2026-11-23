@@ -5,6 +5,13 @@
 A mobile-first, single-column layout (max 560px) of frosted-glass cards on a full-screen sky gradient, inspired by
 modern weather apps but in a deep pounamu-green palette with Māori accent motifs.
 
+## App icon
+
+`icons/icon.svg`: kōwhai sun and a bone koru over the pounamu gradient, a teal tide wave, and a kōkōwai poutama band
+along the bottom. The sun and koru sit inside the maskable safe zone, so one full-bleed design serves all sizes.
+Re-render the PNGs after editing it: `node tools/render_icons.js icons`. The Home Screen label is **Wahine**
+(`apple-mobile-web-app-title` and the manifest's `short_name`); the full name is too long for an iPhone label.
+
 ## Colour tokens (`:root` in `index.html`)
 
 | Token | Value | Use |

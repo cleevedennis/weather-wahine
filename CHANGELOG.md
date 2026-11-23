@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+
+### Added
+- Home Screen web app: app icon, web manifest (installs as "Wahine"), full-screen launch.
+- Offline support via a service worker: opens without signal and shows the last saved forecast per beach, labelled
+  with when it was saved; past days are dropped.
+- Tests for the manifest, icons and offline behaviour; the test clock is pinned so the gate gives the same result
+  on any date.
+
 ## 2026-11-23
 
 ### Added

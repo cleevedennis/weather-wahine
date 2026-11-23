@@ -57,10 +57,25 @@ Settings → **⤓ Add to calendar** downloads an `.ics` file with one event per
 
 Re-importing updates days that still match, but days that stop matching stay in your calendar — delete old ones.
 
-## Using it like an app (iPhone)
+## Install on your iPhone
 
-Open the page in Safari → Share → **Add to Home Screen**. When you reopen it after an hour or on a new day, it
-refreshes the forecast automatically.
+1. Open the page's link in **Safari** (other browsers can't install it on iPhone).
+2. Tap **Share** → **Add to Home Screen** → **Add**.
+
+It appears as **Wahine** with its own icon and opens full screen like an app.
+
+- **Updates:** reopening it after an hour, or on a new day, refreshes the forecast automatically.
+- **Offline:** after it has loaded once with signal, it still opens without signal. It shows the last forecast it
+  saved for that beach, with a yellow note: *"Offline — showing the forecast saved Mon 23 Nov, 6:10 am"*. Days that
+  have already passed are dropped. LINZ tide times are built in, so they stay exact offline; model tides and weather
+  are as of the saved time.
+- **New versions** of the page arrive automatically the next time it opens with signal.
+- **Removing it:** press and hold the icon → Remove App.
+
+Offline mode needs the page to be served from a web address (e.g. GitHub Pages). Opening `index.html` straight from
+a file works, but without offline support.
+
+On Android, Chrome offers **Install app** from its menu.
 
 ## Safety
 
