@@ -13,7 +13,7 @@
     --glass: rgba(16, 40, 80, 0.16);
     --glass-strong: rgba(255, 255, 255, 0.22);
     --line: rgba(255, 255, 255, 0.18);
-    --text: #ffffff; --muted: rgba(255, 255, 255, 0.62);
+    --text: #ffffff; --muted: rgba(255, 255, 255, 0.82);
     --tide: #7fd3ff; --sun: #ffd25a; --both: #8cf0a8;
   }
   body[data-sky="clear"]    { --sky-a: #1f63b5; --sky-b: #63aef0; }
@@ -51,7 +51,7 @@
   .badges { display: flex; justify-content: center; gap: 8px; flex-wrap: wrap; margin-top: 14px; min-height: 30px; }
   .badge { background: var(--glass); backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5);
     border-radius: 999px; padding: 5px 12px; font-size: .85rem; font-weight: 500; }
-  .badge.both { background: rgba(140, 240, 168, .28); }
+  .badge.both { background: rgba(10, 90, 40, .45); }
 
   /* Glass cards */
   .card {
@@ -91,7 +91,7 @@
   .dot.t { background: var(--tide); } .dot.s { background: var(--sun); }
   .cal .cell.both { background: rgba(140, 240, 168, .22); box-shadow: inset 0 0 0 1.5px rgba(140,240,168,.75); }
   .cal .cell.sel { background: rgba(255,255,255,.9); color: #1b3550; }
-  .cal .cell.sel .mon { color: rgba(27,53,80,.6); }
+  .cal .cell.sel .mon { color: rgba(27,53,80,.85); }
   .cal .cell.sel .dot.t { background: #1f8fd6; } .cal .cell.sel .dot.s { background: #e0a000; }
   .legend { display: flex; justify-content: center; gap: 14px; font-size: .75rem; color: var(--muted); margin-top: 10px; }
   .legend i { display: inline-block; width: 7px; height: 7px; border-radius: 50%; margin-right: 5px; vertical-align: 1px; }
@@ -134,6 +134,9 @@
   footer a { color: #fff; }
 
   .skeleton { opacity: .5; }
+  .sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+  [data-i]:focus-visible { outline: 2px solid #fff; outline-offset: 2px; }
+  .notice { font-size: .8rem; color: var(--muted); padding-top: 8px; }
   @media (max-width: 380px) {
     .hero .temp { font-size: 5rem; }
     .row { grid-template-columns: 44px 28px 30px 1fr 30px; gap: 6px; }
@@ -143,6 +146,7 @@
 </head>
 <body data-sky="clear">
 <main>
+  <h1 class="sr-only">Weather Wahine – West Auckland tides and sunny days</h1>
   <section class="hero" id="hero">
     <div class="loc-wrap"><select id="loc" aria-label="Beach"></select></div>
     <div class="day-label" id="dayLabel">Today</div>
@@ -298,7 +302,8 @@ function analyse({ marine, weather }) {
     const hasWeather = code != null && tmax != null;
     const sunny = hasWeather && code <= 2 && tmax >= minTemp && (rain == null || rain <= maxRain);
     const tide = inWindow.length > 0;
-    return { date, highs, inWindow, curve, tide, sunny, both: tide && sunny, code, tmax, tmin, rain, sunH, uv, hasWeather };
+    const hasTide = curve.length >= 20;
+    return { date, highs, inWindow, curve, hasTide, tide, sunny, both: tide && sunny, code, tmax, tmin, rain, sunH, uv, hasWeather };
   });
 }
 
@@ -321,6 +326,9 @@ function renderHero() {
 
 function renderBest() {
   const best = state.days.map((d, i) => ({ ...d, i })).filter((d) => d.both);
+  const lastTide = [...state.days].reverse().find((d) => d.hasTide);
+  const notice = lastTide && lastTide !== state.days.at(-1)
+    ? `<div class="notice">Tide forecast runs to ${fmtDate(lastTide.date, { weekday: "short", day: "numeric", month: "short" })}; later days can't be checked for tides yet.</div>` : "";
   $("bestCount").textContent = best.length ? `${best.length} day${best.length > 1 ? "s" : ""}` : "";
   $("best").innerHTML = best.length
     ? best.map((d) => `<div class="best-row" data-i="${d.i}">
@@ -328,13 +336,14 @@ function renderBest() {
         <span class="what">${wmo(d.code)[1]} High tide ${d.inWindow.map((t) => fmtTime(t.mins)).join(" & ")}</span>
         <span class="t">${Math.round(d.tmax)}°</span></div>`).join("")
     : `<div class="empty-note">No days with both a ${fmtTime(toMin($("from").value))}–${fmtTime(toMin($("to").value))} high tide and sunny weather in the next ${state.days.length} days.</div>`;
+  $("best").insertAdjacentHTML("beforeend", notice);
 }
 
 function renderTide() {
   const d = state.days[state.sel];
   const svg = $("tideSvg");
   $("tideDay").textContent = state.sel === 0 ? "Today" : fmtDate(d.date, { weekday: "short", day: "numeric", month: "short" });
-  if (d.curve.length < 3) { svg.innerHTML = `<text x="170" y="65" text-anchor="middle">No tide data for this day</text>`; $("tideHighs").textContent = ""; $("tideWin").textContent = ""; return; }
+  if (!d.hasTide) { svg.innerHTML = `<text x="170" y="65" text-anchor="middle">Tide forecast doesn't reach this far ahead yet</text>`; $("tideHighs").textContent = ""; $("tideWin").textContent = ""; return; }
   const W = 340, H = 130, top = 22, bot = 108;
   const all = state.days.flatMap((x) => x.curve.map((p) => p[1]));
   const lo = Math.min(...all), hi = Math.max(...all);
@@ -400,6 +409,7 @@ function renderList() {
     if (d.both) chips.push(`<span class="chip b">★ Beach day</span>`);
     if (d.tide) chips.push(`<span class="chip t">🌊 ${d.inWindow.map((t) => fmtTime(t.mins)).join(" & ")}</span>`);
     else if (d.sunny) chips.push(`<span class="chip s">☀︎ Sunny & warm</span>`);
+    if (!d.hasTide && !d.sunny) chips.push(`<span class="chip">Tide n/a</span>`);
     const rainSmall = d.rain >= 20 ? `<small>${d.rain}%</small>` : "";
     return `<div class="row${i === state.sel ? " sel" : ""}" data-i="${i}">
       <span class="dname">${shortDay(d, i)}</span>
@@ -418,6 +428,12 @@ function select(i) {
   state.sel = i; renderHero(); renderTide(); renderCal(); renderList();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
+document.addEventListener("keydown", (e) => {
+  if ((e.key === "Enter" || e.key === " ") && e.target.matches?.("[data-i]")) { e.preventDefault(); e.target.click(); }
+});
+// make every tappable day keyboard-focusable after each render
+new MutationObserver(() => document.querySelectorAll("[data-i]:not([tabindex])").forEach((el) => { el.tabIndex = 0; el.setAttribute("role", "button"); }))
+  .observe(document.querySelector("main"), { childList: true, subtree: true });
 document.addEventListener("click", (e) => {
   const el = e.target.closest("[data-i]");
   if (el && state.days.length) select(Number(el.dataset.i));
@@ -427,7 +443,11 @@ document.addEventListener("click", (e) => {
 function toICS(days, locName) {
   const pad = (n) => String(n).padStart(2, "0");
   const stamp = new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z";
-  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Weather Wahine//EN", "CALSCALE:GREGORIAN", `X-WR-CALNAME:Weather Wahine – ${locName}`];
+  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Weather Wahine//EN", "CALSCALE:GREGORIAN", `X-WR-CALNAME:Weather Wahine – ${locName}`,
+    "BEGIN:VTIMEZONE", `TZID:${TZ}`,
+    "BEGIN:DAYLIGHT", "TZOFFSETFROM:+1200", "TZOFFSETTO:+1300", "TZNAME:NZDT", "DTSTART:19700927T020000", "RRULE:FREQ=YEARLY;BYMONTH=9;BYDAY=-1SU", "END:DAYLIGHT",
+    "BEGIN:STANDARD", "TZOFFSETFROM:+1300", "TZOFFSETTO:+1200", "TZNAME:NZST", "DTSTART:19700405T030000", "RRULE:FREQ=YEARLY;BYMONTH=4;BYDAY=1SU", "END:STANDARD",
+    "END:VTIMEZONE"];
   for (const d of days) {
     if (!d.tide && !d.sunny) continue;
     const ymd = d.date.replace(/-/g, "");
