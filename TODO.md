@@ -16,7 +16,11 @@
 - [x] Swell height shown; 2.5 m+ flagged with a warning; Safeswim safety note; "Beach day" renamed "Tide & sun".
 - [ ] Optional: tune the 2.5 m swell threshold (`BIG_SWELL_M` in index.html) to what you're comfortable with.
 
+## CI/CD (one-time, repo owner)
+- [ ] Settings → Pages → Source: GitHub Actions
+- [ ] Settings → Secrets and variables → Actions → Variables: `PAGES_ENABLED` = `true`
+- [ ] Settings → Branches: require the "Offline test gate" check on the default branch
+
 ## Later
-- [ ] Optional: host on GitHub Pages for a phone link.
-- [ ] Before end of 2027: add Onehunga 2028 LINZ table (steps in README).
+- [ ] Before end of 2027: add Onehunga 2028 LINZ table (steps in README). The daily canary will warn 90 days ahead.
 - [ ] Note: re-importing the .ics updates matching days, but days that stop qualifying stay in your calendar — delete old ones.

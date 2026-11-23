@@ -1,0 +1,14 @@
+{
+  "name": "weather-wahine",
+  "private": true,
+  "description": "West Auckland tides and sunny days calendar",
+  "scripts": {
+    "test": "playwright test --project=gate --trace off",
+    "test:live": "playwright test --project=live --trace off",
+    "serve": "python3 -m http.server 4173"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.63.0",
+    "axe-core": "4.10.2"
+  }
+}
