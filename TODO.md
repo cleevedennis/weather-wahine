@@ -19,10 +19,9 @@
 - [ ] Optional: tune the 2.5 m swell threshold (`BIG_SWELL_M` in index.html) to what you're comfortable with.
 
 ## CI/CD (one-time, repo owner)
-- [ ] Merge PR #3 into `main`, then Settings → General → Default branch: `main`
-- [ ] Settings → Pages → Source: GitHub Actions
-- [ ] Settings → Secrets and variables → Actions → Variables: `PAGES_ENABLED` = `true`
-- [ ] Settings → Branches: protect `main`, require the "Offline test gate" check
+- [ ] **Settings → Pages → Source: GitHub Actions** (the only step needed for the app link to work)
+- [ ] Recommended: Settings → General → Default branch: `main`
+- [ ] Recommended: Settings → Branches: protect `main`, require the "Offline test gate" check
 
 ## Later
 - [ ] Optional, only if wanted: App Store version (Capacitor + widget/notifications/EventKit, Apple Developer
