@@ -58,6 +58,10 @@
   .badge { background: var(--glass); backdrop-filter: blur(18px) saturate(1.5); -webkit-backdrop-filter: blur(18px) saturate(1.5);
     border-radius: 999px; padding: 5px 12px; font-size: .85rem; font-weight: 500; }
   .badge.both { background: rgba(150, 58, 28, .6); }
+  .badge.warn { background: rgba(160, 30, 20, .65); }
+  .hero .cond .win { font-size: .8rem; font-weight: 500; color: var(--muted); margin-left: 4px; }
+  .warn-text { color: #ffb8a3; font-weight: 600; white-space: nowrap; }
+  .notice.safety a { color: var(--bone); }
 
   /* Glass cards */
   .card {
@@ -119,7 +123,7 @@
     background: linear-gradient(90deg, #6fd6cf, #f2c94c 55%, #ef8d5f); }
   .row .sub { grid-column: 2 / -1; display: flex; gap: 6px; flex-wrap: wrap; margin-top: -2px; }
   .chip { font-size: .72rem; font-weight: 600; border-radius: 999px; padding: 2px 8px; background: rgba(0,0,0,.18); }
-  .chip.t { color: var(--tide); } .chip.s { color: var(--sun); } .chip.b { color: var(--both); background: rgba(0,0,0,.18); }
+  .chip.t { color: var(--tide); } .chip.s { color: var(--sun); } .chip.w { color: #ffb8a3; } .chip.b { color: var(--both); background: rgba(0,0,0,.18); }
   .row.sel .dname { text-decoration: underline; text-underline-offset: 4px; text-decoration-thickness: 2px; }
 
   /* Settings */
@@ -214,7 +218,8 @@
     Tides: official LINZ predictions where set up, otherwise the Open-Meteo model (±15–30 min) — check
     <a href="https://www.linz.govt.nz/products-services/tides-and-tidal-streams/tide-predictions" target="_blank" rel="noopener">LINZ tide tables</a>
     before you go. Forecasts beyond ~7 days are a rough guide.<br>
-    “Sunny” = clear to partly cloudy, at or above your min temp, rain chance within your limit.<br>
+    “Sunny” = clear to partly cloudy through your tide window, at or above your min temp, rain chance within your limit.
+    Swell warning at 2.5 m+. Not a swimming-safety forecast.<br>
     Data: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (CC BY 4.0) ·
     tide tables © <a href="https://www.linz.govt.nz/" target="_blank" rel="noopener">Toitū Te Whenua LINZ</a> (CC BY 4.0)
   </footer>
@@ -240,6 +245,8 @@ const LOCATIONS = ALL_LOCATIONS.filter((l) => !l.harbour || usesLinz(l));
 const DEFAULT_LOC = "Piha";
 const TZ = "Pacific/Auckland";
 const DAYS = 16;
+const BIG_SWELL_M = 2.5;   // waves at or above this get a surf warning
+const windowLabel = () => `${fmtTime(settings().from).replace(":00", "")}–${fmtTime(settings().to).replace(":00", "")}`;
 const WMO = {
   0: ["Clear", "☀️", "clear"], 1: ["Mainly Clear", "🌤️", "clear"], 2: ["Partly Cloudy", "⛅️", "partly"],
   3: ["Cloudy", "☁️", "overcast"], 45: ["Fog", "🌫️", "overcast"], 48: ["Fog", "🌫️", "overcast"],
@@ -314,13 +321,15 @@ function findHighTides(times, levels) {
 
 async function fetchData(loc) {
   const q = `latitude=${loc.lat}&longitude=${loc.lon}&timezone=${encodeURIComponent(TZ)}&forecast_days=${DAYS}`;
+  const linz = usesLinz(loc);
   const [m, w] = await Promise.all([
-    usesLinz(loc) ? Promise.resolve(null) : fetch(`https://marine-api.open-meteo.com/v1/marine?${q}&hourly=sea_level_height_msl&cell_selection=sea`),
-    fetch(`https://api.open-meteo.com/v1/forecast?${q}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunshine_duration,uv_index_max`),
+    fetch(`https://marine-api.open-meteo.com/v1/marine?${q}&hourly=${linz ? "" : "sea_level_height_msl,"}wave_height&cell_selection=sea`).catch(() => null),
+    fetch(`https://api.open-meteo.com/v1/forecast?${q}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunshine_duration,uv_index_max&hourly=weather_code,temperature_2m,precipitation_probability,cloud_cover`),
   ]);
-  if (m && !m.ok) throw new Error(`tide data unavailable (${m.status})`);
+  // Waves are optional; the marine feed is only essential when it is also the tide source.
+  if (!linz && !m?.ok) throw new Error(`tide data unavailable (${m ? m.status : "offline"})`);
   if (!w.ok) throw new Error(`weather unavailable (${w.status})`);
-  return { loc, marine: m ? await m.json() : null, weather: await w.json() };
+  return { loc, marine: m?.ok ? await m.json() : null, weather: await w.json() };
 }
 
 // Tides from the bundled LINZ tables: shift Onehunga extremes by the beach's secondary-port
@@ -357,7 +366,12 @@ function analyse(data) {
   const ht = td.time, hl = td.level, tides = td.highs;
   const stepMins = ht.length > 1 ? naive(ht[1]) - naive(ht[0]) : 60;
   const stepsPerDay = 1440 / stepMins;
-  const d = weather.daily;
+  const d = weather.daily, wh = weather.hourly, mh = data.marine?.hourly;
+  // Hours that overlap the window, e.g. 11:00–15:00 → the 11am…3pm hours.
+  const inWin = (iso) => { const m = toMin(iso.slice(11)); return m + 59 >= from && m <= to; };
+  const pick = (h, key, date) => (h?.[key] ? h.time.map((t, j) => (t.startsWith(date) && inWin(t) ? h[key][j] : null)).filter((v) => v != null) : []);
+  const max = (a) => (a.length ? Math.max(...a) : null);
+  const mean = (a) => (a.length ? a.reduce((x, y) => x + y, 0) / a.length : null);
   return d.time.map((date, i) => {
     const highs = tides.filter((t) => t.date === date);
     const inWindow = highs.filter((t) => t.mins >= from && t.mins <= to);
@@ -368,26 +382,36 @@ function analyse(data) {
     const sunH = d.sunshine_duration?.[i] != null ? d.sunshine_duration[i] / 3600 : null;
     const uv = d.uv_index_max?.[i];
     const hasWeather = code != null && tmax != null;
-    const sunny = hasWeather && code <= 2 && tmax >= minTemp && (rain == null || rain <= maxRain);
+    // Weather during the window (hourly). Falls back to the daily summary if hourly data is missing.
+    const wCodes = pick(wh, "weather_code", date), wTemps = pick(wh, "temperature_2m", date);
+    const hourly = wCodes.length > 0 && wTemps.length > 0;
+    const winCode = hourly ? max(wCodes) : code, winTemp = hourly ? max(wTemps) : tmax;
+    const winRain = hourly ? max(pick(wh, "precipitation_probability", date)) : rain;
+    const winCloud = mean(pick(wh, "cloud_cover", date));
+    const sunny = hasWeather && winCode <= 2 && winTemp >= minTemp && (winRain == null || winRain <= maxRain);
+    const wave = max(pick(mh, "wave_height", date));
+    const bigSwell = wave != null && wave >= BIG_SWELL_M;
     const tide = inWindow.length > 0;
     const hasTide = curve.length >= stepsPerDay * 0.8;
-    return { date, highs, inWindow, curve, hasTide, tide, sunny, both: tide && sunny, code, tmax, tmin, rain, sunH, uv, hasWeather };
+    return { date, highs, inWindow, curve, hasTide, tide, sunny, both: tide && sunny, code, tmax, tmin, rain, sunH, uv, hasWeather,
+      hourly, winCode, winTemp, winRain, winCloud, wave, bigSwell };
   });
 }
 
 /* ---------- render ---------- */
 function renderHero() {
   const d = state.days[state.sel], i = state.sel;
-  const [name, , sky] = wmo(d.code);
+  const [name, , sky] = wmo(d.winCode ?? d.code);
   document.body.dataset.sky = d.hasWeather ? sky : "overcast";
   $("dayLabel").textContent = i === 0 ? "Today" : fmtDate(d.date, { weekday: "long", day: "numeric", month: "long" });
   $("heroTemp").textContent = d.hasWeather ? `${Math.round(d.tmax)}°` : "--°";
-  $("heroCond").textContent = d.hasWeather ? name : "No forecast yet";
+  $("heroCond").innerHTML = d.hasWeather ? `${name}${d.hourly ? ` <span class="win">${windowLabel()}</span>` : ""}` : "No forecast yet";
   $("heroHL").textContent = d.hasWeather ? `H:${Math.round(d.tmax)}°  L:${Math.round(d.tmin ?? d.tmax)}°` : " ";
   const b = [];
-  if (d.both) b.push(`<span class="badge both">★ Beach day</span>`);
+  if (d.both) b.push(`<span class="badge both">★ Tide & sun</span>`);
   if (d.tide) b.push(`<span class="badge">🌊 High ${d.inWindow.map((t) => fmtTime(t.mins)).join(" & ")}</span>`);
-  if (d.rain != null) b.push(`<span class="badge">💧 ${d.rain}%</span>`);
+  if (d.winRain != null) b.push(`<span class="badge">💧 ${d.winRain}%</span>`);
+  if (d.wave != null) b.push(`<span class="badge${d.bigSwell ? " warn" : ""}">${d.bigSwell ? "⚠️ Big swell" : "Swell"} ${d.wave.toFixed(1)} m</span>`);
   if (d.uv != null && d.hasWeather) b.push(`<span class="badge">UV ${Math.round(d.uv)}</span>`);
   $("heroBadges").innerHTML = b.join("");
 }
@@ -401,10 +425,11 @@ function renderBest() {
   $("best").innerHTML = best.length
     ? best.map((d) => `<div class="best-row" data-i="${d.i}">
         <span class="when">${d.i === 0 ? "Today" : fmtDate(d.date, { weekday: "short", day: "numeric", month: "short" })}</span>
-        <span class="what">${wmo(d.code)[1]} High tide ${d.inWindow.map((t) => fmtTime(t.mins)).join(" & ")}</span>
-        <span class="t">${Math.round(d.tmax)}°</span></div>`).join("")
+        <span class="what">${wmo(d.winCode)[1]} High tide ${d.inWindow.map((t) => fmtTime(t.mins)).join(" & ")}${d.bigSwell ? ` <span class="warn-text">⚠️ ${d.wave.toFixed(1)} m swell</span>` : ""}</span>
+        <span class="t">${Math.round(d.winTemp)}°</span></div>`).join("")
     : `<div class="empty-note">No days with both a ${fmtTime(settings().from)}–${fmtTime(settings().to)} high tide and sunny weather in the next ${state.days.length} days.</div>`;
-  $("best").insertAdjacentHTML("beforeend", notice);
+  $("best").insertAdjacentHTML("beforeend", notice + `<div class="notice safety">★ means the tide and sun line up, not that it's safe to swim. West Coast beaches have strong rips and big surf — swim between the flags at patrolled beaches and check
+    <a href="https://safeswim.org.nz/" target="_blank" rel="noopener">Safeswim</a> before you go.</div>`);
 }
 
 function renderTide() {
@@ -477,14 +502,15 @@ function renderList() {
     const tmin = d.tmin ?? d.tmax;
     const left = ((tmin - lo) / span) * 100, width = Math.max(4, ((d.tmax - tmin) / span) * 100);
     const chips = [];
-    if (d.both) chips.push(`<span class="chip b">★ Beach day</span>`);
+    if (d.both) chips.push(`<span class="chip b">★ Tide & sun</span>`);
     if (d.tide) chips.push(`<span class="chip t">🌊 ${d.inWindow.map((t) => fmtTime(t.mins)).join(" & ")}</span>`);
     else if (d.sunny) chips.push(`<span class="chip s">☀︎ Sunny & warm</span>`);
     if (!d.hasTide && !d.sunny) chips.push(`<span class="chip">Tide n/a</span>`);
-    const rainSmall = d.rain >= 20 ? `<small>${d.rain}%</small>` : "";
+    if (d.bigSwell) chips.push(`<span class="chip w">⚠️ ${d.wave.toFixed(1)} m swell</span>`);
+    const rainSmall = d.winRain >= 20 ? `<small>${d.winRain}%</small>` : "";
     return `<div class="row${i === state.sel ? " sel" : ""}" data-i="${i}">
       <span class="dname">${shortDay(d, i)}</span>
-      <span class="ico">${wmo(d.code)[1]}${rainSmall}</span>
+      <span class="ico">${wmo(d.winCode)[1]}${rainSmall}</span>
       <span class="lo">${Math.round(tmin)}°</span>
       <div class="bar"><span style="clip-path:inset(0 ${Math.max(0, 100 - left - width)}% 0 ${left}% round 3px)"></span></div>
       <span class="hi">${Math.round(d.tmax)}°</span>
@@ -511,6 +537,17 @@ document.addEventListener("click", (e) => {
 });
 
 /* ---------- calendar export ---------- */
+// iCalendar lines must be at most 75 bytes; longer ones continue on the next line after a space.
+function foldLine(line) {
+  const enc = new TextEncoder(), out = [];
+  let cur = "", limit = 75;
+  for (const ch of line) {
+    if (enc.encode(cur + ch).length > limit) { out.push(cur); cur = ""; limit = 74; }
+    cur += ch;
+  }
+  out.push(cur);
+  return out.join("\r\n ");
+}
 function toICS(days, locName) {
   const pad = (n) => String(n).padStart(2, "0");
   const stamp = new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z";
@@ -524,7 +561,8 @@ function toICS(days, locName) {
     const ymd = d.date.replace(/-/g, "");
     const parts = [];
     if (d.tide) parts.push(`High tide ${d.inWindow.map((t) => fmtTime(t.mins)).join(" & ")}`);
-    if (d.sunny) parts.push(`Sunny ${Math.round(d.tmax)}°C`);
+    if (d.sunny) parts.push(`Sunny ${Math.round(d.winTemp)}°C`);
+    if (d.bigSwell) parts.push(`⚠ ${d.wave.toFixed(1)} m swell`);
     const summary = (d.both ? "★ " : d.tide ? "🌊 " : "☀️ ") + parts.join(" · ") + ` (${locName})`;
     lines.push("BEGIN:VEVENT", `UID:${ymd}-${locName.replace(/\W+/g, "")}@weather-wahine`, `DTSTAMP:${stamp}`);
     if (d.tide) {
@@ -537,7 +575,7 @@ function toICS(days, locName) {
     lines.push(`SUMMARY:${summary}`, "TRANSP:TRANSPARENT", "END:VEVENT");
   }
   lines.push("END:VCALENDAR");
-  return lines.join("\r\n");
+  return lines.map(foldLine).join("\r\n");
 }
 
 /* ---------- main ---------- */

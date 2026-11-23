@@ -4,7 +4,6 @@
 - [ ] **LINZ secondary-port differences.** From linz.govt.nz → Tides and tidal streams → Tide predictions →
       Secondary ports, copy the high-water (and low-water) time difference and reference port for:
       Huia, Manukau Harbour Entrance (Bar/Heads), and any of Piha, Te Henga, Muriwai.
-- [ ] **Decide on review recommendations** (below).
 - [ ] **Check on iPhone Safari:** frosted glass, time pickers, beach dropdown, .ics import, Add to Home Screen.
 - [ ] **Te reo & motif check by a speaker:** Ngā rā pai, Te tai, Maramataka (lunar-calendar nuance),
       Matapae huarere, Tautuhinga; koru / niho taniwha / poutama use.
@@ -12,11 +11,10 @@
 ## Then Claude does
 - [ ] Fill LINZ offsets in `ALL_LOCATIONS` (index.html), verify against LINZ, confirm Huia Bay appears, rerun smoke tests.
 
-## Review recommendations (need a decision)
-- [ ] **Judge "sunny" on 11am–3pm, not the whole day.** Open-Meteo's daily weather code is the *worst* weather
-      of the day, so early drizzle hides a clear afternoon (e.g. 8 Dec forecast: clear and 20° all window, marked not sunny).
-- [ ] **Show swell / surf warning.** West Coast surf is the main hazard; forecast shows 3–4.4 m waves on 1–2 Dec.
-      Show wave height, flag big swell, link Safeswim, and avoid "Beach day" sounding like "safe to swim".
+## Done from the review
+- [x] Sunny is judged on the hourly forecast for your tide window, not the whole day.
+- [x] Swell height shown; 2.5 m+ flagged with a warning; Safeswim safety note; "Beach day" renamed "Tide & sun".
+- [ ] Optional: tune the 2.5 m swell threshold (`BIG_SWELL_M` in index.html) to what you're comfortable with.
 
 ## Later
 - [ ] Optional: host on GitHub Pages for a phone link.
