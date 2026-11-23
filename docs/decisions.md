@@ -18,10 +18,11 @@ Testing showed the model gives Huia the same times as Piha, while LINZ Onehunga 
 resolve the Manukau. LINZ is the official source, but its CSV host sends no CORS headers, so the page can't fetch it.
 The yearly CSVs are bundled as `tides-data.js` (a script, so `file://` works) with a converter in `tools/`.
 
-### 5. Per-beach LINZ offsets; model as fallback; harbour beaches hidden until set
-Offsets must be copied by hand from LINZ (its website blocks automated requests). Until then the model is used on the
-open coast, where it appears consistent. Harbour beaches (Huia Domain, Kaitarakihi, Cornwallis) were first hidden, then shown
-with weather only and tides marked "not set up", because model tide and swell values there are wrong.
+### 5. Per-beach LINZ offsets; model only as a fallback
+Offsets come from the NZ Nautical Almanac secondary-ports table, supplied by the owner (LINZ's website blocks automated
+requests). Before they arrived the model was used on the open coast and harbour beaches showed weather only. The table
+showed the model's West Coast times were about an hour early, so every beach now uses LINZ; beaches without their own
+row use the nearest port. The model remains only as a fallback for a beach added without an offset.
 
 ### 6. Judge "sunny" on the tide window's hours
 Open-Meteo's daily weather code is the worst weather of the whole day, so early drizzle hid clear afternoons

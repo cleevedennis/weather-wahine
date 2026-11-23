@@ -48,10 +48,14 @@ async function openPage(page, { marine = marineSine(), weather = weatherDaily(),
   await page.route(/^https?:\/\/(?!127\.0\.0\.1)/, (r) => r.abort());
   await page.route('**/marine**', (r) => { requests.push(r.request().url()); return marineStatus === 'abort' ? r.abort() : r.fulfill({ status: marineStatus, json: marine }); });
   await page.route('**/forecast**', (r) => { requests.push(r.request().url()); return r.fulfill({ status: weatherStatus, json: weather }); });
-  if (linz) {
+  // LINZ offsets: by default every beach's offset is blanked so tides come from the mocked model data (that's
+  // what most tests exercise). Pass `linz: { Beach: { hw, lw } }` to set specific ones, or `linz: 'real'` to keep
+  // the offsets exactly as configured in index.html.
+  if (linz !== 'real') {
     await page.route('**/index.html', async (r) => {
       let body = await (await r.fetch()).text();
-      for (const [name, off] of Object.entries(linz)) {
+      body = body.replace(/linz: \{ hw: [^,]+, lw: [^}]+ \}/g, 'linz: { hw: null, lw: null }');
+      for (const [name, off] of Object.entries(linz || {})) {
         const re = new RegExp(`(\\{ name: "${name}",[^}]*linz: )\\{ hw: null, lw: null \\}`);
         if (!re.test(body)) throw new Error(`No LINZ slot for ${name}`);
         body = body.replace(re, `$1{ hw: ${off.hw}, lw: ${off.lw ?? null} }`);

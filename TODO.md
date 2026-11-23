@@ -1,9 +1,7 @@
 # Weather Wahine – to do
 
 ## Waiting on you
-- [ ] **LINZ secondary-port differences.** From linz.govt.nz → Tides and tidal streams → Tide predictions →
-      Secondary ports, copy the high-water (and low-water) time difference and reference port for:
-      Huia, Cornwallis, Kaitarakihi (or nearest), Manukau Harbour Entrance (Bar/Heads), and any of Piha, Te Henga, Muriwai.
+- [x] **LINZ secondary-port differences** — supplied (NZNA table, `data/NZNA_Secondary-ports-2026-27.csv`).
 - [ ] **Check on iPhone Safari:** frosted glass, time pickers, beach dropdown, .ics import.
 - [ ] **Install on iPhone** (once Pages is live): Add to Home Screen → check the sun icon and "Weather Wahine" label (iOS may shorten it), full-screen
       launch, then turn on Aeroplane Mode and reopen — it should show the saved forecast with the yellow offline note.
@@ -11,7 +9,8 @@
       Matapae huarere, Tautuhinga; koru / niho taniwha / poutama use.
 
 ## Then Claude does
-- [ ] Fill LINZ offsets in `ALL_LOCATIONS` (index.html), verify against LINZ, confirm harbour beaches (Huia Domain, Kaitarakihi, Cornwallis) show tides, rerun tests.
+- [x] LINZ offsets entered for all beaches and checked against the Onehunga table (see docs/tides.md).
+- [ ] When the 2028 NZNA secondary-ports table is out, check whether the differences changed.
 
 ## Done from the review
 - [x] Sunny is judged on the hourly forecast for your tide window, not the whole day.

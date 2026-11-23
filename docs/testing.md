@@ -21,7 +21,7 @@ Two things keep the gate deterministic:
 - **Service workers blocked** by default, so mocked network calls can't be bypassed. `tests/pwa.spec.js` enables them
   and mocks at the browser-context level instead, which also catches the worker's own requests.
 
-## What the gate covers (28 tests)
+## What the gate covers (29 tests)
 
 **Logic** (`tests/logic.spec.js`)
 - High-tide times within 3 minutes on a known curve, including a tide just before midnight
@@ -34,6 +34,7 @@ Two things keep the gate deterministic:
 
 **LINZ** (`tests/linz.spec.js`)
 - Without offsets: coast beaches use the model; picker grouped Manukau Harbour / West Coast
+- Configured offsets for every beach = Onehunga + its LINZ difference (`linz: 'real'`)
 - Harbour beaches without offsets: no marine request, tides "not set up yet", weather and sunny days still work
 - With injected offsets: times = Onehunga + offset, full 16-day coverage, Huia appears, no model tide request
 - LINZ beach still works when the swell feed is down
@@ -62,8 +63,9 @@ Two things keep the gate deterministic:
 - `marineSine(days, phase, wave)` — semi-diurnal tide with optional per-day wave height
 - `marinePeaks(days, hours)` — tide peaks at exact hours, for window-edge tests
 - `weatherDaily(days, f)` / `weatherHourly(days, daily, hour)` — daily-only or daily + hourly weather
-- `openPage(page, { marine, weather, marineStatus, weatherStatus, linz })` — mocks the APIs, blocks all other
-  external requests, and can inject LINZ offsets into named beaches without editing `index.html`
+- `openPage(page, { marine, weather, marineStatus, weatherStatus, linz })` — mocks the APIs and blocks all other
+  external requests. By default it blanks every beach's LINZ offset so tides come from the mocked model data; pass
+  `linz: { Beach: { hw, lw } }` to set some, or `linz: 'real'` to use the offsets configured in `index.html`
 - `days(page)` — a compact view of `state.days` for assertions
 - `MOCK_NOW` — the pinned clock time
 

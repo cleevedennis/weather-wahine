@@ -222,7 +222,8 @@
 
   <footer>
     <div class="poutama" aria-hidden="true"></div>
-    Tides: official LINZ predictions where set up, otherwise the Open-Meteo model (±15–30 min) — check
+    Tides: official LINZ predictions (Onehunga plus each beach's LINZ time difference; on a given day the real time can
+    differ by up to about half an hour) — check
     <a href="https://www.linz.govt.nz/products-services/tides-and-tidal-streams/tide-predictions" target="_blank" rel="noopener">LINZ tide tables</a>
     before you go. Forecasts beyond ~7 days are a rough guide.<br>
     “Sunny” = clear to partly cloudy through your tide window, at or above your min temp, rain chance within your limit.
@@ -235,20 +236,21 @@
 <script src="tides-data.js"></script>
 <script>
 // Beaches, grouped as shown in the picker. Coordinates are approximate (weather is forecast on a ~1–2 km grid).
-// linz: official LINZ secondary-port differences from Onehunga, in minutes
-//   (hw = high-water time difference, lw = low-water; e.g. -1h 34m → -94).
-//   When set, tides come from the bundled LINZ tables (tides-data.js) instead of the Open-Meteo model.
-// harbour: true = inside the Manukau Harbour. The Open-Meteo tide and swell models are wrong there, so these
-//   beaches show weather only, with tides marked "not set up", until linz.hw is filled in.
+// linz: LINZ secondary-port mean time differences from Onehunga, in minutes (hw = high water, lw = low water;
+//   e.g. -0045 → -45), from the NZ Nautical Almanac table in data/NZNA_Secondary-ports-2026-27.csv. Beaches without
+//   their own row use the nearest port. When set, tides come from the bundled LINZ tables (tides-data.js);
+//   when null, coast beaches fall back to the Open-Meteo model.
+// harbour: true = inside the Manukau Harbour. The Open-Meteo tide and swell models are wrong there, so without a
+//   LINZ offset these beaches show weather only, with tides marked "not set up", and never show swell.
 const ALL_LOCATIONS = [
-  { name: "Huia Domain", group: "Manukau Harbour", lat: -37.003, lon: 174.566, harbour: true, linz: { hw: null, lw: null } },
-  { name: "Kaitarakihi", group: "Manukau Harbour", lat: -37.008, lon: 174.583, harbour: true, linz: { hw: null, lw: null } },
-  { name: "Cornwallis", group: "Manukau Harbour", lat: -37.012, lon: 174.600, harbour: true, linz: { hw: null, lw: null } },
-  { name: "Whatipu", group: "West Coast", lat: -37.044, lon: 174.507, linz: { hw: null, lw: null } },
-  { name: "Karekare", group: "West Coast", lat: -36.988, lon: 174.476, linz: { hw: null, lw: null } },
-  { name: "Piha", group: "West Coast", lat: -36.954, lon: 174.469, linz: { hw: null, lw: null } },
-  { name: "Te Henga", group: "West Coast", lat: -36.887, lon: 174.442, linz: { hw: null, lw: null } },
-  { name: "Muriwai", group: "West Coast", lat: -36.829, lon: 174.424, linz: { hw: null, lw: null } },
+  { name: "Huia Domain", group: "Manukau Harbour", lat: -37.003, lon: 174.566, harbour: true, linz: { hw: -13, lw: -17 } },   // no own row: Cornwallis (nearest)
+  { name: "Kaitarakihi", group: "Manukau Harbour", lat: -37.008, lon: 174.583, harbour: true, linz: { hw: -13, lw: -17 } },   // no own row: Cornwallis
+  { name: "Cornwallis", group: "Manukau Harbour", lat: -37.012, lon: 174.600, harbour: true, linz: { hw: -13, lw: -17 } },    // LINZ 6374
+  { name: "Whatipu", group: "West Coast", lat: -37.044, lon: 174.507, linz: { hw: -33, lw: -28 } },     // LINZ 6373 Paratutae Island
+  { name: "Karekare", group: "West Coast", lat: -36.988, lon: 174.476, linz: { hw: -45, lw: -35 } },    // no own row: Piha (nearest)
+  { name: "Piha", group: "West Coast", lat: -36.954, lon: 174.469, linz: { hw: -45, lw: -35 } },        // LINZ 6375b (approximate)
+  { name: "Te Henga", group: "West Coast", lat: -36.887, lon: 174.442, linz: { hw: -40, lw: -50 } },    // LINZ 6375d (approximate)
+  { name: "Muriwai", group: "West Coast", lat: -36.829, lon: 174.424, linz: { hw: -40, lw: -30 } },     // LINZ 6375e (approximate)
 ];
 const usesLinz = (l) => l.linz?.hw != null && !!window.LINZ_TIDES;
 const tidesPending = (l) => l.harbour && !usesLinz(l);   // harbour beach still waiting for its LINZ offset
@@ -498,7 +500,7 @@ function renderTide() {
   $("tideWin").textContent = d.tide ? "✓ In your window" : "Not in window";
   $("tideSrc").textContent = state.tideSource === "LINZ"
     ? `Official LINZ prediction (Onehunga ${fmtOffset(currentLoc().linz.hw)})`
-    : "Open-Meteo tide model (±15–30 min)";
+    : "Open-Meteo tide model (estimate; can be about an hour out)";
 }
 
 function renderCal() {

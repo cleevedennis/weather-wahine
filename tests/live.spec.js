@@ -19,7 +19,7 @@ test('every beach loads real data with plausible tides, weather and swell', asyn
       return { days: state.days.length, covered: covered.length, perDay: covered.map((d) => d.highs.length),
         minGap: Math.min(...gaps), maxGap: Math.max(...gaps), hourly: state.days.slice(0, 7).every((d) => d.hourly),
         waves: state.days.slice(0, 5).every((d) => d.wave != null && d.wave >= 0 && d.wave < 15),
-        pending: state.tideSource === 'pending' };
+        pending: state.tideSource === 'pending', harbour: !!currentLoc().harbour };
     });
     expect(s.days, `${n}: 16 forecast days`).toBe(16);
     expect(s.hourly, `${n}: hourly weather fields present`).toBe(true);
@@ -29,7 +29,7 @@ test('every beach loads real data with plausible tides, weather and swell', asyn
     expect(s.minGap, `${n}: highs ~12h25m apart`).toBeGreaterThan(11);
     expect(s.maxGap).toBeLessThan(14);
     expect(s.hourly, `${n}: hourly weather fields present`).toBe(true);
-    expect(s.waves, `${n}: wave heights present and plausible`).toBe(true);
+    if (!s.harbour) expect(s.waves, `${n}: wave heights present and plausible`).toBe(true);   // no swell inside the harbour
   }
   expect(errors).toEqual([]);
 });

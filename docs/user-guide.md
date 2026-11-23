@@ -6,11 +6,11 @@ Tap the beach name at the top to switch. Beaches are grouped **Manukau Harbour**
 
 | Beach | Tide source today |
 |---|---|
-| Whatipu, Karekare, Piha, Te Henga, Muriwai | Open-Meteo tide model until a LINZ offset is entered, then official LINZ |
-| **Manukau Harbour:** Huia Domain, Kaitarakihi, Cornwallis | Weather only, with tides marked "not set up yet", until each has its LINZ offset (the model gives wrong tide times inside the harbour). Then official LINZ |
+| **West Coast:** Whatipu, Karekare, Piha, Te Henga, Muriwai | Official LINZ (Karekare uses Piha's offset) |
+| **Manukau Harbour:** Huia Domain, Kaitarakihi, Cornwallis | Official LINZ (Cornwallis offset; Huia and Kaitarakihi have no LINZ row of their own). No swell shown inside the harbour |
 
 The tide card says which source is in use, e.g. *"Official LINZ prediction (Onehunga −1h 40m)"* or
-*"Open-Meteo tide model (±15–30 min)"*. Your chosen beach is remembered on that device.
+*"Open-Meteo tide model (estimate; can be about an hour out)"* (only for a beach without a LINZ offset). Your chosen beach is remembered on that device.
 
 ## Settings (⚙︎ Tautuhinga)
 
