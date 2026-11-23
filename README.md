@@ -8,8 +8,7 @@ A single-page calendar for West Auckland's West Coast beaches that shows, for th
 - ⚠️ **Big swell warnings** (2.5 m+ waves)
 
 Beaches: **West Coast** — Whatipu, Karekare, Piha, Te Henga (Bethells), Muriwai — and **Manukau Harbour** — Huia Domain,
-Kaitarakihi, Cornwallis. Harbour beaches show weather now and get tide times once their official LINZ tide offsets are
-entered. Matching days can be downloaded as an `.ics` file for Outlook, Google or Apple Calendar.
+Kaitarakihi, Cornwallis. Tide times come from official LINZ predictions for every beach. Matching days can be downloaded as an `.ics` file for Outlook, Google or Apple Calendar.
 
 > ★ means the tide and sun line up — **not** that it's safe to swim. West Coast beaches have strong rips and big surf.
 > Swim between the flags at patrolled beaches and check [Safeswim](https://safeswim.org.nz/).

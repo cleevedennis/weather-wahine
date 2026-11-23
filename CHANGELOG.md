@@ -2,6 +2,10 @@
 
 ## Unreleased
 
+### Changed
+- **All beaches now use official LINZ tide times** (NZ Nautical Almanac secondary-port differences from Onehunga).
+  The model's West Coast tide times had been about an hour early.
+
 ### Added
 - Manukau Harbour beaches: Huia Domain, Kaitarakihi and Cornwallis (weather now; tides once LINZ offsets are set).
   Beach picker grouped Manukau Harbour / West Coast.

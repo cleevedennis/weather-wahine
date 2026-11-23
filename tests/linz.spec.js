@@ -53,6 +53,22 @@ test('LINZ offsets: times = Onehunga + offset, full coverage, harbour beach gets
   expect((await days(page))[0].highs).toEqual([9 * 60 + 29, 21 * 60 + 46]);
 });
 
+test('configured offsets match the LINZ secondary-ports table (Onehunga + difference)', async ({ page }) => {
+  await openPage(page, { linz: 'real', weather: weatherDaily(16) });
+  // Onehunga 23 Nov 2026 high waters: 10:09 and 22:26 (data/Onehunga_2026.csv)
+  const expected = { Piha: -45, Karekare: -45, Whatipu: -33, 'Te Henga': -40, Muriwai: -40,
+    'Huia Domain': -13, Kaitarakihi: -13, Cornwallis: -13 };
+  for (const [beach, hw] of Object.entries(expected)) {
+    if ((await page.inputValue('#loc')) !== beach) {
+      await page.selectOption('#loc', beach);
+      await page.waitForFunction((b) => state.key === b, beach);
+    }
+    expect(await page.evaluate(() => state.tideSource), beach).toBe('LINZ');
+    expect((await days(page))[0].highs, beach).toEqual([10 * 60 + 9 + hw, 22 * 60 + 26 + hw]);
+  }
+  await expect(page.locator('#tideSrc')).toContainText('Official LINZ prediction');
+});
+
 test('LINZ beach still works when the swell feed is down', async ({ page }) => {
   await openPage(page, { linz: { Piha: { hw: -100 } }, marineStatus: 'abort' });
   await expect(page.locator('#status')).toContainText('Updated');

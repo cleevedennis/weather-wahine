@@ -5,7 +5,7 @@
 | Source | Accuracy | Range | Used when |
 |---|---|---|---|
 | **LINZ** official predictions (Onehunga standard port + secondary-port offset) | Official | Whole bundled period (currently 2026–2027) | The beach has `linz.hw` set |
-| **Open-Meteo** tide model (`sea_level_height_msl`) | Roughly ±15–30 min on the open coast; **wrong inside harbours** | ~9 days | No LINZ offset yet |
+| **Open-Meteo** tide model (`sea_level_height_msl`) | About **an hour early** on the West Coast; **wrong inside harbours** | ~9 days | No LINZ offset (fallback only; every beach has one now) |
 
 ## What we measured (23 Nov 2026)
 
@@ -14,15 +14,33 @@ Comparing the model against LINZ's official Onehunga table for 23–30 Nov 2026:
 - The model gives **the same times for Huia as for Piha** (within 1–2 minutes) — it does not resolve the Manukau Harbour.
 - Onehunga's official highs run a steady **1h31–1h49 later** than the model's coastal times. The steady offset suggests
   the model tracks the open-coast tide well, but this is not yet confirmed against LINZ's entrance figures.
-- Therefore the harbour beaches (Huia Domain, Kaitarakihi, Cornwallis) show weather only until their LINZ offsets are
-  entered, and West Coast beaches should be switched to LINZ
-  once their offsets are known.
+- **Confirmed with the LINZ secondary-ports table:** Piha's official high water is only **45 min** before Onehunga, so
+  the model's West Coast times were running **about an hour early**. All beaches now use LINZ offsets.
 
 | Date | LINZ Onehunga HW | Model (Huia = Piha) |
 |---|---|---|
 | Mon 23 Nov | 10:09am, 10:26pm | 8:30am, 8:46pm |
 | Tue 24 Nov | 11:00am, 11:18pm | 9:14am, 9:31pm |
 | Wed 25 Nov | 11:49am | 10:00am, 10:20pm |
+
+## Offsets in use
+
+From the NZ Nautical Almanac secondary-ports table, 2026–27 (`data/NZNA_Secondary-ports-2026-27.csv`), all relative to
+**Onehunga** (LINZ port 6375). LINZ marks the West Coast beach rows as *approximate*.
+
+| Beach | LINZ row | HW | LW | Note |
+|---|---|---|---|---|
+| Huia Domain | 6374 Cornwallis | −13 | −17 | no own row; nearest port, real time may be a few minutes earlier |
+| Kaitarakihi | 6374 Cornwallis | −13 | −17 | no own row; ~1.5 km away |
+| Cornwallis | 6374 Cornwallis | −13 | −17 | |
+| Whatipu | 6373 Paratutae Island | −33 | −28 | Paratutae is at Whatipu |
+| Karekare | 6375b Piha Beach | −45 | −35 | no own row; nearest port |
+| Piha | 6375b Piha Beach | −45 | −35 | approximate (LINZ) |
+| Te Henga | 6375d Te Henga / Bethells Beach | −40 | −50 | approximate (LINZ) |
+| Muriwai | 6375e Muriwai Beach | −40 | −30 | approximate (LINZ) |
+
+These are **mean** differences. LINZ also gives a range (e.g. Cornwallis HW −42 to +31 min), so on a given day the
+real time can differ by up to about half an hour, depending on springs and neaps. Still far closer than the model.
 
 ## Entering LINZ offsets
 
