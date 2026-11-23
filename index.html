@@ -183,6 +183,7 @@
     <div class="card-h">🌊 Te tai <span class="en">· Tide</span><span class="right" id="tideDay"></span></div>
     <svg class="tide-svg" id="tideSvg" viewBox="0 0 340 130" role="img" aria-label="Tide height through the day"></svg>
     <div class="tide-foot"><span id="tideHighs"></span><span id="tideWin"></span></div>
+    <div class="notice" id="tideSrc"></div>
   </section>
 
   <section class="card">
@@ -210,23 +211,32 @@
 
   <footer>
     <div class="poutama" aria-hidden="true"></div>
-    Tide times are model estimates (±15–30 min) — check
+    Tides: official LINZ predictions where set up, otherwise the Open-Meteo model (±15–30 min) — check
     <a href="https://www.linz.govt.nz/products-services/tides-and-tidal-streams/tide-predictions" target="_blank" rel="noopener">LINZ tide tables</a>
     before you go. Forecasts beyond ~7 days are a rough guide.<br>
     “Sunny” = clear to partly cloudy, at or above your min temp, rain chance within your limit.<br>
-    Data: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (CC BY 4.0)
+    Data: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (CC BY 4.0) ·
+    tide tables © <a href="https://www.linz.govt.nz/" target="_blank" rel="noopener">Toitū Te Whenua LINZ</a> (CC BY 4.0)
   </footer>
 </main>
 
+<script src="tides-data.js"></script>
 <script>
-// West Coast beaches, roughly in driving order from Huia
-const LOCATIONS = [
-  { name: "Whatipu", lat: -37.044, lon: 174.507 },
-  { name: "Karekare", lat: -36.988, lon: 174.476 },
-  { name: "Piha", lat: -36.954, lon: 174.469 },
-  { name: "Te Henga", lat: -36.887, lon: 174.442 },
-  { name: "Muriwai", lat: -36.829, lon: 174.424 },
+// West Coast beaches, roughly in driving order from Huia.
+// linz: official LINZ secondary-port differences from Onehunga, in minutes
+//   (hw = high-water time difference, lw = low-water; e.g. -1h 34m → -94).
+//   When set, tides come from the bundled LINZ tables (tides-data.js) instead of the Open-Meteo model.
+// harbour: true = inside the Manukau, where the model is wrong — only shown once linz.hw is filled in.
+const ALL_LOCATIONS = [
+  { name: "Huia Bay", lat: -37.000, lon: 174.570, harbour: true, linz: { hw: null, lw: null } },
+  { name: "Whatipu", lat: -37.044, lon: 174.507, linz: { hw: null, lw: null } },
+  { name: "Karekare", lat: -36.988, lon: 174.476, linz: { hw: null, lw: null } },
+  { name: "Piha", lat: -36.954, lon: 174.469, linz: { hw: null, lw: null } },
+  { name: "Te Henga", lat: -36.887, lon: 174.442, linz: { hw: null, lw: null } },
+  { name: "Muriwai", lat: -36.829, lon: 174.424, linz: { hw: null, lw: null } },
 ];
+const usesLinz = (l) => l.linz?.hw != null && !!window.LINZ_TIDES;
+const LOCATIONS = ALL_LOCATIONS.filter((l) => !l.harbour || usesLinz(l));
 const DEFAULT_LOC = "Piha";
 const TZ = "Pacific/Auckland";
 const DAYS = 16;
@@ -268,6 +278,7 @@ const fmtTime = (mins) => {
   const h = Math.floor(mins / 60), m = mins % 60;
   return `${((h + 11) % 12) + 1}:${String(m).padStart(2, "0")}${h >= 12 ? "pm" : "am"}`;
 };
+const fmtOffset = (m) => `${m < 0 ? "−" : "+"}${Math.floor(Math.abs(m) / 60)}h ${String(Math.abs(m) % 60).padStart(2, "0")}m`;
 const dateObj = (iso) => new Date(iso + "T12:00:00Z");
 const fmtDate = (iso, opts) => dateObj(iso).toLocaleDateString("en-NZ", { timeZone: "UTC", ...opts });
 const shortDay = (d, i) => (i === 0 ? "Today" : fmtDate(d.date, { weekday: "short" }));
@@ -296,19 +307,49 @@ function findHighTides(times, levels) {
 async function fetchData(loc) {
   const q = `latitude=${loc.lat}&longitude=${loc.lon}&timezone=${encodeURIComponent(TZ)}&forecast_days=${DAYS}`;
   const [m, w] = await Promise.all([
-    fetch(`https://marine-api.open-meteo.com/v1/marine?${q}&hourly=sea_level_height_msl&cell_selection=sea`),
+    usesLinz(loc) ? Promise.resolve(null) : fetch(`https://marine-api.open-meteo.com/v1/marine?${q}&hourly=sea_level_height_msl&cell_selection=sea`),
     fetch(`https://api.open-meteo.com/v1/forecast?${q}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunshine_duration,uv_index_max`),
   ]);
-  if (!m.ok) throw new Error(`tide data unavailable (${m.status})`);
+  if (m && !m.ok) throw new Error(`tide data unavailable (${m.status})`);
   if (!w.ok) throw new Error(`weather unavailable (${w.status})`);
-  return { marine: await m.json(), weather: await w.json() };
+  return { loc, marine: m ? await m.json() : null, weather: await w.json() };
 }
 
-function analyse({ marine, weather }) {
+// Tides from the bundled LINZ tables: shift Onehunga extremes by the beach's secondary-port
+// differences, then draw a smooth curve between them (cosine interpolation, 20-min steps).
+const naive = (iso) => Date.parse(iso + ":00Z") / 60000;            // local time as plain minutes
+const naiveIso = (m) => new Date(m * 60000).toISOString().slice(0, 16);
+function linzTides(loc, dates) {
+  const start = naive(dates[0] + "T00:00") - 24 * 60, end = naive(dates.at(-1) + "T23:59") + 24 * 60;
+  const ev = window.LINZ_TIDES.events
+    .map(([t, h, hi]) => [naive(t) + (hi ? loc.linz.hw : (loc.linz.lw ?? loc.linz.hw)), h, hi])
+    .filter(([m]) => m >= start && m <= end);
+  const highs = ev.filter((e) => e[2]).map(([m, h]) => ({ date: naiveIso(m).slice(0, 10), mins: m % 1440, height: h }));
+  const time = [], level = [];
+  for (let m = naive(dates[0] + "T00:00"); m <= naive(dates.at(-1) + "T23:40"); m += 20) {
+    const i = ev.findIndex((e) => e[0] > m);
+    time.push(naiveIso(m));
+    if (i < 1) { level.push(null); continue; }
+    const [m0, h0] = ev[i - 1], [m1, h1] = ev[i], f = (m - m0) / (m1 - m0);
+    level.push(h0 + (h1 - h0) * (1 - Math.cos(Math.PI * f)) / 2);
+  }
+  return { highs, time, level, source: "LINZ" };
+}
+function tideData({ loc, marine, weather }) {
+  if (usesLinz(loc)) return linzTides(loc, weather.daily.time);
+  const time = marine.hourly.time, level = marine.hourly.sea_level_height_msl;
+  return { highs: findHighTides(time, level), time, level, source: "model" };
+}
+
+function analyse(data) {
+  const { weather } = data;
   const from = toMin($("from").value || "11:00"), to = toMin($("to").value || "15:00");
   const minTemp = Number($("minTemp").value), maxRain = Number($("maxRain").value);
-  const ht = marine.hourly.time, hl = marine.hourly.sea_level_height_msl;
-  const tides = findHighTides(ht, hl);
+  const td = tideData(data);
+  state.tideSource = td.source;
+  const ht = td.time, hl = td.level, tides = td.highs;
+  const stepMins = ht.length > 1 ? naive(ht[1]) - naive(ht[0]) : 60;
+  const stepsPerDay = 1440 / stepMins;
   const d = weather.daily;
   return d.time.map((date, i) => {
     const highs = tides.filter((t) => t.date === date);
@@ -322,7 +363,7 @@ function analyse({ marine, weather }) {
     const hasWeather = code != null && tmax != null;
     const sunny = hasWeather && code <= 2 && tmax >= minTemp && (rain == null || rain <= maxRain);
     const tide = inWindow.length > 0;
-    const hasTide = curve.length >= 20;
+    const hasTide = curve.length >= stepsPerDay * 0.8;
     return { date, highs, inWindow, curve, hasTide, tide, sunny, both: tide && sunny, code, tmax, tmin, rain, sunH, uv, hasWeather };
   });
 }
@@ -399,6 +440,9 @@ function renderTide() {
     ${nowLine}${highs}${hours}`;
   $("tideHighs").textContent = d.highs.length ? `High: ${d.highs.map((t) => fmtTime(t.mins)).join(" · ")}` : "";
   $("tideWin").textContent = d.tide ? "✓ In your window" : "Not in window";
+  $("tideSrc").textContent = state.tideSource === "LINZ"
+    ? `Official LINZ prediction (Onehunga ${fmtOffset(currentLoc().linz.hw)})`
+    : "Open-Meteo tide model (±15–30 min)";
 }
 
 function renderCal() {
