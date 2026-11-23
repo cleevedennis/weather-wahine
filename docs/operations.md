@@ -58,6 +58,7 @@ The site is published at https://cleevedennis.github.io/weather-wahine/.
 | Deploy job fails in seconds without running | The github-pages environment only allows the default branch, and the run was on another branch | Run CI on the default branch (Actions → CI → Run workflow). |
 | Auto-merge: "Update is not a fast forward" | The default branch has commits that aren't in `main` | Open a PR from the default branch into `main` so they meet again. |
 | Deploy smoke check fails | Pages slow to publish | Re-run the job. |
+| deploy-pages: "No artifacts named github-pages were found" | Mismatched Pages action versions | Keep `upload-pages-artifact` and `deploy-pages` on a matching, tested pair (currently v3 + v4); Dependabot skips their major updates. |
 | Dependabot PR fails CI | A tool update changed behaviour | Read the failing test; pin the previous version if needed. |
 | Installed app shows an old version | Service worker served a cached copy while offline or on slow signal | Open it once with good signal; if `SHELL` in `sw.js` changed, make sure `VERSION` was bumped. |
 
@@ -67,7 +68,9 @@ GitHub emails the repo owner when a scheduled workflow fails.
 
 - Node 22 in CI; `@playwright/test` 1.63.0 and `axe-core` 4.10.2 pinned in `package.json` / `package-lock.json`.
 - Python 3.12 in CI; `icalendar` 6.1.0 pinned in `requirements-dev.txt`.
-- Actions are pinned to major versions and kept current by Dependabot.
+- Actions are pinned to major versions and kept current by Dependabot, except the three Pages actions
+  (`configure-pages@v5`, `upload-pages-artifact@v3`, `deploy-pages@v4`), whose major updates are skipped because
+  they must be upgraded together and checked with a real deploy.
 
 ## Claude Code cloud environment
 
