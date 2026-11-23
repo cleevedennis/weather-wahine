@@ -5,7 +5,7 @@
       Secondary ports, copy the high-water (and low-water) time difference and reference port for:
       Huia, Manukau Harbour Entrance (Bar/Heads), and any of Piha, Te Henga, Muriwai.
 - [ ] **Check on iPhone Safari:** frosted glass, time pickers, beach dropdown, .ics import.
-- [ ] **Install on iPhone** (once Pages is live): Add to Home Screen → check the icon and "Wahine" label, full-screen
+- [ ] **Install on iPhone** (once Pages is live): Add to Home Screen → check the sun icon and "Weather Wahine" label (iOS may shorten it), full-screen
       launch, then turn on Aeroplane Mode and reopen — it should show the saved forecast with the yellow offline note.
 - [ ] **Te reo & motif check by a speaker:** Ngā rā pai, Te tai, Maramataka (lunar-calendar nuance),
       Matapae huarere, Tautuhinga; koru / niho taniwha / poutama use.

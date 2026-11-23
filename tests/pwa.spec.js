@@ -10,7 +10,8 @@ test('manifest and icons are linked, valid and the right sizes', async ({ page, 
   await page.goto('/index.html');
   const href = await page.getAttribute('link[rel="manifest"]', 'href');
   const manifest = await (await request.get(href)).json();
-  expect(manifest).toMatchObject({ name: 'Weather Wahine', display: 'standalone', start_url: './index.html', scope: './' });
+  expect(manifest).toMatchObject({ name: 'Weather Wahine', short_name: 'Weather Wahine', display: 'standalone', start_url: './index.html', scope: './' });
+  await expect(page.locator('meta[name="apple-mobile-web-app-title"]')).toHaveAttribute('content', 'Weather Wahine');
   for (const icon of manifest.icons) {
     const [w, h] = pngSize(icon.src);
     expect(`${w}x${h}`).toBe(icon.sizes);

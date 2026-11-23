@@ -7,10 +7,27 @@
 | **CI → Offline test gate** | `.github/workflows/ci.yml` | Every push and pull request; manual | `npm ci` → install Chromium → tide data check (`--warn-days 0`) → `npm test` → `validate_ics.py`; uploads `playwright-report` on failure | Yes |
 | **CI → Deploy to GitHub Pages** | `.github/workflows/ci.yml` | Push to the **default branch**, after the gate, when repo variable `PAGES_ENABLED` is `true` | Copies `index.html`, `tides-data.js`, `manifest.webmanifest`, `sw.js` and `icons/` to `_site`, deploys, then fetches them from the live URL | — |
 | **Live canary** | `.github/workflows/live.yml` | Daily 17:23 UTC (6:23am NZDT / 5:23am NZST); manual | Tide data check (`--warn-days 90`) → live Playwright suite (2 retries) | No |
-| **Dependabot** | `.github/dependabot.yml` | Monthly | Grouped PRs for GitHub Actions and npm test tools | — |
+| **Auto-merge** | `.github/workflows/auto-merge.yml` | When a CI run on a PR succeeds | Merges the PR if it's still at the tested commit, then starts CI on the base branch | — |
+| **Dependabot** | `.github/dependabot.yml` | Monthly | Grouped PRs (into `main`) for GitHub Actions and npm test tools | — |
 
 Concurrency: CI cancels superseded runs on the same ref; deploys never cancel each other.
 Permissions: workflows default to `contents: read`; only the deploy job gets `pages: write` and `id-token: write`.
+
+## Merge policy
+
+**Every pull request is merged as soon as CI passes on its latest commit.** This is enforced by
+`.github/workflows/auto-merge.yml`, so it keeps working without anyone watching:
+
+1. CI runs on the PR (the **Offline test gate**).
+2. When CI finishes successfully, the Auto-merge workflow checks the PR is still at the commit that was tested, is not
+   a draft and comes from this repo — then merges it (merge commit) into its base branch.
+3. It then starts CI on the base branch, which re-runs the tests and deploys if that branch is the default.
+
+A red or cancelled run never merges. Pushing a new commit to a PR restarts the cycle. To hold a PR back, mark it as a
+**draft**. Dependabot PRs follow the same rule (they target `main`).
+
+Note: GitHub may run workflows triggered by Dependabot with a read-only token. If a green Dependabot PR is not
+merged automatically, merge it by hand or turn on Settings → General → **Allow auto-merge** and protect `main`.
 
 ## Branches
 

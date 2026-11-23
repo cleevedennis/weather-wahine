@@ -1,5 +1,5 @@
 // Usage: node tools/render_icons.js icons   (needs Playwright: npm ci && npx playwright install chromium)
-// Render icons/icon.svg to PNGs (full-bleed; the sun and koru sit inside the maskable safe zone).
+// Render icons/icon.svg to PNGs (full-bleed; the sun sits inside the maskable safe zone).
 const { chromium } = require('playwright'); const fs = require('fs'); const path = require('path');
 (async () => {
   const dir = process.argv[2]; const svg = fs.readFileSync(path.join(dir, 'icon.svg'), 'utf8');

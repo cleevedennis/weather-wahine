@@ -7,10 +7,12 @@ modern weather apps but in a deep pounamu-green palette with Māori accent motif
 
 ## App icon
 
-`icons/icon.svg`: kōwhai sun and a bone koru over the pounamu gradient, a teal tide wave, and a kōkōwai poutama band
-along the bottom. The sun and koru sit inside the maskable safe zone, so one full-bleed design serves all sizes.
-Re-render the PNGs after editing it: `node tools/render_icons.js icons`. The Home Screen label is **Wahine**
-(`apple-mobile-web-app-title` and the manifest's `short_name`); the full name is too long for an iPhone label.
+`icons/icon.svg`: **te rā, the sun** — a kōwhai sun with a soft glow, centred on the pounamu gradient. It sits inside
+the maskable safe zone, so one full-bleed design serves all sizes and stays legible down to 32px.
+Re-render the PNGs after editing it: `node tools/render_icons.js icons`.
+
+The Home Screen label is **Weather Wahine** (`apple-mobile-web-app-title` and the manifest's `short_name`). iOS may
+shorten names this long on the Home Screen (e.g. "Weather Wa…"); a shorter `short_name` avoids that if it matters.
 
 ## Colour tokens (`:root` in `index.html`)
 

@@ -49,3 +49,9 @@ Apple Developer account (US$99/year) or App Review. A plain wrapped web page wou
 guideline 4.2 (minimum functionality), Open-Meteo's free API is for non-commercial use, and the `.ics` download doesn't
 work inside an app's web view. If App Store distribution is wanted later, the route is Capacitor plus native features
 (widget, notifications, EventKit calendar), built on a Mac or Xcode Cloud and tested via TestFlight.
+
+### 12. Merge every PR once it's green, enforced by a workflow
+The owner wants PRs merged as soon as CI passes. A `workflow_run` workflow does this rather than a person or this
+chat, so it outlasts any session, needs no extra repo settings, and only merges the exact commit CI tested. Because
+merges made with the workflow token don't trigger other workflows, it dispatches CI on the base branch afterwards so
+deploys still happen.

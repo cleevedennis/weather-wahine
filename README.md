@@ -17,7 +17,7 @@ offset is entered. Matching days can be downloaded as an `.ics` file for Outlook
 
 - **Use it:** open `index.html` in a browser (works straight from disk), or use the GitHub Pages link once deploys
   are switched on ([operations guide](docs/operations.md#one-time-setup-repo-owner)).
-- **On an iPhone:** open the page in Safari → Share → **Add to Home Screen**. It installs as **Wahine** with its own
+- **On an iPhone:** open the page in Safari → Share → **Add to Home Screen**. It installs as **Weather Wahine** with its own
   icon, opens full screen, and works offline with the last saved forecast ([user guide](docs/user-guide.md#install-on-your-iphone)).
 - No accounts or API keys. Weather and swell come from [Open-Meteo](https://open-meteo.com/); tides from the Open-Meteo
   tide model or official [LINZ](https://www.linz.govt.nz/products-services/tides-and-tidal-streams/tide-predictions) tables.

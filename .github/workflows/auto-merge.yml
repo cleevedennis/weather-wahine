@@ -1,0 +1,39 @@
+# Repository policy: merge every pull request as soon as CI passes on its latest commit.
+# Runs after each CI run; merges only if that run was for a PR, it succeeded, and the PR hasn't
+# changed since (so a red or untested commit can never be merged). PRs from forks and drafts are left alone.
+name: Auto-merge
+
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: write
+
+jobs:
+  merge:
+    if: github.event.workflow_run.event == 'pull_request' && github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Merge the PR if CI passed on its current head
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SHA: ${{ github.event.workflow_run.head_sha }}
+          BRANCH: ${{ github.event.workflow_run.head_branch }}
+        run: |
+          pr=$(gh pr list -R "$REPO" --state open --json number,headRefOid,headRefName,isDraft,isCrossRepository \
+            --jq ".[] | select(.headRefName == \"$BRANCH\" and .headRefOid == \"$SHA\" and (.isDraft | not) and (.isCrossRepository | not)) | .number" | head -1)
+          if [ -z "$pr" ]; then
+            echo "No open, non-draft PR from this repo at $SHA (it may have new commits, be closed, or come from a fork). Nothing to do."
+            exit 0
+          fi
+          base=$(gh pr view "$pr" -R "$REPO" --json baseRefName --jq .baseRefName)
+          gh pr merge "$pr" -R "$REPO" --merge --match-head-commit "$SHA"
+          echo "Merged #$pr into $base"
+          # Merges made with this token don't start new workflow runs, so start CI (tests + deploy) on the base branch.
+          gh workflow run ci.yml -R "$REPO" --ref "$base"

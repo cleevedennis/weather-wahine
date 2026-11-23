@@ -62,7 +62,8 @@ Re-importing updates days that still match, but days that stop matching stay in 
 1. Open the page's link in **Safari** (other browsers can't install it on iPhone).
 2. Tap **Share** → **Add to Home Screen** → **Add**.
 
-It appears as **Wahine** with its own icon and opens full screen like an app.
+It appears as **Weather Wahine** with a sun icon and opens full screen like an app. On some iPhones the label is
+shortened (e.g. "Weather Wa…") because Home Screen names have limited room.
 
 - **Updates:** reopening it after an hour, or on a new day, refreshes the forecast automatically.
 - **Offline:** after it has loaded once with signal, it still opens without signal. It shows the last forecast it
