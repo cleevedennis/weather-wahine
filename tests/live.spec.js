@@ -18,9 +18,12 @@ test('every beach loads real data with plausible tides, weather and swell', asyn
       const gaps = highs.slice(1).map((h, i) => (h - highs[i]) / 60);
       return { days: state.days.length, covered: covered.length, perDay: covered.map((d) => d.highs.length),
         minGap: Math.min(...gaps), maxGap: Math.max(...gaps), hourly: state.days.slice(0, 7).every((d) => d.hourly),
-        waves: state.days.slice(0, 5).every((d) => d.wave != null && d.wave >= 0 && d.wave < 15) };
+        waves: state.days.slice(0, 5).every((d) => d.wave != null && d.wave >= 0 && d.wave < 15),
+        pending: state.tideSource === 'pending' };
     });
     expect(s.days, `${n}: 16 forecast days`).toBe(16);
+    expect(s.hourly, `${n}: hourly weather fields present`).toBe(true);
+    if (s.pending) continue;   // harbour beach without its LINZ offset: weather only, no tides or swell
     expect(s.covered, `${n}: tide coverage`).toBeGreaterThanOrEqual(7);
     expect(s.perDay.every((k) => k >= 1 && k <= 2), `${n}: 1–2 highs per day`).toBe(true);
     expect(s.minGap, `${n}: highs ~12h25m apart`).toBeGreaterThan(11);

@@ -20,7 +20,8 @@ The yearly CSVs are bundled as `tides-data.js` (a script, so `file://` works) wi
 
 ### 5. Per-beach LINZ offsets; model as fallback; harbour beaches hidden until set
 Offsets must be copied by hand from LINZ (its website blocks automated requests). Until then the model is used on the
-open coast, where it appears consistent, and Huia Bay stays hidden because model times there are wrong.
+open coast, where it appears consistent. Harbour beaches (Huia Domain, Kaitarakihi, Cornwallis) were first hidden, then shown
+with weather only and tides marked "not set up", because model tide and swell values there are wrong.
 
 ### 6. Judge "sunny" on the tide window's hours
 Open-Meteo's daily weather code is the worst weather of the whole day, so early drizzle hid clear afternoons

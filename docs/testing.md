@@ -21,7 +21,7 @@ Two things keep the gate deterministic:
 - **Service workers blocked** by default, so mocked network calls can't be bypassed. `tests/pwa.spec.js` enables them
   and mocks at the browser-context level instead, which also catches the worker's own requests.
 
-## What the gate covers (27 tests)
+## What the gate covers (28 tests)
 
 **Logic** (`tests/logic.spec.js`)
 - High-tide times within 3 minutes on a known curve, including a tide just before midnight
@@ -33,7 +33,8 @@ Two things keep the gate deterministic:
 - Safety wording: no "Beach day"; Safeswim link present
 
 **LINZ** (`tests/linz.spec.js`)
-- Without offsets: model used, Huia Bay hidden
+- Without offsets: coast beaches use the model; picker grouped Manukau Harbour / West Coast
+- Harbour beaches without offsets: no marine request, tides "not set up yet", weather and sunny days still work
 - With injected offsets: times = Onehunga + offset, full 16-day coverage, Huia appears, no model tide request
 - LINZ beach still works when the swell feed is down
 - **Two-year back-test:** every LINZ high tide in `data/*.csv` reproduced to the minute at offsets −100, −40 and +30,

@@ -14,7 +14,8 @@ Comparing the model against LINZ's official Onehunga table for 23–30 Nov 2026:
 - The model gives **the same times for Huia as for Piha** (within 1–2 minutes) — it does not resolve the Manukau Harbour.
 - Onehunga's official highs run a steady **1h31–1h49 later** than the model's coastal times. The steady offset suggests
   the model tracks the open-coast tide well, but this is not yet confirmed against LINZ's entrance figures.
-- Therefore Huia Bay is hidden until its LINZ offset is entered, and West Coast beaches should be switched to LINZ
+- Therefore the harbour beaches (Huia Domain, Kaitarakihi, Cornwallis) show weather only until their LINZ offsets are
+  entered, and West Coast beaches should be switched to LINZ
   once their offsets are known.
 
 | Date | LINZ Onehunga HW | Model (Huia = Piha) |
@@ -34,20 +35,22 @@ linz.govt.nz → Tides and tidal streams → Tide predictions → **Secondary po
 3. Edit `ALL_LOCATIONS` in `index.html`:
 
    ```js
-   { name: "Huia Bay", lat: -37.000, lon: 174.570, harbour: true, linz: { hw: -94, lw: -100 } },
+   { name: "Huia Domain", group: "Manukau Harbour", lat: -37.003, lon: 174.566, harbour: true, linz: { hw: -94, lw: -100 } },
    ```
 
    `lw` may stay `null` (then `hw` is used for low waters too; only the curve shape is affected).
 4. Run `npm test`. Then open the page: the tide card should read *"Official LINZ prediction (Onehunga −1h 34m)"*
    and times should equal the Onehunga table plus the offset.
 
-Whatipu and Karekare sit near the harbour entrance; Piha, Te Henga and Muriwai are open coast — use the closest
+Kaitarakihi and Cornwallis may not have their own LINZ rows; use the nearest listed port (e.g. Huia) and say so in a
+comment. Whatipu and Karekare sit near the harbour entrance; Piha, Te Henga and Muriwai are open coast — use the closest
 published secondary port for each.
 
 ## Adding a beach
 
-Add an entry to `ALL_LOCATIONS` with `name`, `lat`, `lon` and `linz: { hw: null, lw: null }`. Set `harbour: true` for
-anywhere inside a harbour so it stays hidden until it has a LINZ offset. Order the list as it should appear.
+Add an entry to `ALL_LOCATIONS` with `name`, `group` (picker heading), `lat`, `lon` and `linz: { hw: null, lw: null }`.
+Set `harbour: true` for anywhere inside a harbour: it then shows weather only (no model tides or offshore swell) until
+it has a LINZ offset. Order the list as it should appear.
 Update the expected beach list in `tests/linz.spec.js`.
 
 ## Refreshing the LINZ data (yearly)

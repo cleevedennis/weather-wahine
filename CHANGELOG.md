@@ -3,6 +3,8 @@
 ## Unreleased
 
 ### Added
+- Manukau Harbour beaches: Huia Domain, Kaitarakihi and Cornwallis (weather now; tides once LINZ offsets are set).
+  Beach picker grouped Manukau Harbour / West Coast.
 - Home Screen web app: sun (te rā) app icon, web manifest (installs as "Weather Wahine"), full-screen launch.
 - Offline support via a service worker: opens without signal and shows the last saved forecast per beach, labelled
   with when it was saved; past days are dropped.

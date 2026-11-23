@@ -2,12 +2,12 @@
 
 ## Choosing a beach
 
-Tap the beach name at the top to switch. Beaches are listed south to north:
+Tap the beach name at the top to switch. Beaches are grouped **Manukau Harbour** and **West Coast**:
 
 | Beach | Tide source today |
 |---|---|
 | Whatipu, Karekare, Piha, Te Henga, Muriwai | Open-Meteo tide model until a LINZ offset is entered, then official LINZ |
-| Huia Bay | Hidden until its LINZ offset is entered (the model gives wrong times inside the Manukau Harbour) |
+| **Manukau Harbour:** Huia Domain, Kaitarakihi, Cornwallis | Weather only, with tides marked "not set up yet", until each has its LINZ offset (the model gives wrong tide times inside the harbour). Then official LINZ |
 
 The tide card says which source is in use, e.g. *"Official LINZ prediction (Onehunga −1h 40m)"* or
 *"Open-Meteo tide model (±15–30 min)"*. Your chosen beach is remembered on that device.
