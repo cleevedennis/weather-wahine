@@ -24,18 +24,19 @@ Empty or invalid entries fall back to the defaults. Settings are remembered on t
 ## Reading the screen
 
 - **Top section** — the selected day (tap any day to change it): high temperature, the weather **during your window**
-  (labelled e.g. "11am–4pm"), high/low for the day, and badges for ★ Tide & sun, high-tide time, rain chance,
+  (labelled e.g. "11am–4pm"), high/low for the day, and badges for its medal (e.g. ★ Gold day), high-tide time, rain chance,
   swell height and UV. A red **⚠️ Big swell** badge appears at 2.5 m+.
-- **★ Ngā rā pai · Best days** — the next 4 days (in date order) with a high tide in your window, your minimum
-  temperature, sunny or partly cloudy skies and under 40% rain. Each row shows the tide time, temperature and rain
-  chance, and a big-swell warning when it applies. The rules are listed at the top of the panel, and a note says when
-  fewer than 4 days line up. A safety note follows.
-  If the tide source doesn't cover all 16 days, a note says when tide data ends.
+- **★ Ngā rā pai · Best days** — the 4 best days in the forecast, best first, tagged **Platinum**, **Gold**,
+  **Silver** and **Bronze**. Only days with a high tide in your window and no rain forecast can rank. Each scores up
+  to 9 points: sky (clear 2, partly cloudy 1, cloudy 0), warmth (at or above your minimum 2, up to 3° below 1, up to
+  6° below 0, colder is out), rain chance (under 20% 2, under 40% 1, under 60% 0, more is out), tide (near the middle
+  of your window 2, elsewhere in it 1) and swell (under 1.5 m +1, 2.5 m+ −1). A day needs 2 points to rank; ties go to
+  the earlier date. If the tide source doesn't cover all 16 days, a note says when tide data ends.
 - **🌊 Te tai · Tide** — the day's tide curve with your window shaded, high-tide times, whether one falls in the window,
   and the tide source. On "Today" a dotted line marks the current time.
-- **📅 Maramataka · Calendar** — blue dot = high tide in window, yellow dot = sunny & warm, outlined day = both.
-- **🗓 Matapae huarere · 16-day forecast** — window weather icon, rain chance, temperature range bar, and chips for
-  ★ Tide & sun, the in-window high tide, "Sunny & warm", "Tide n/a" (beyond tide coverage) and big swell.
+- **🗓 Matapae huarere · 16-day forecast** — every day in the same row layout as Best days: weather icon, in-window
+  high tide ("—" if none), window temperature, rain chance and swell (coral at 2.5 m+). Ranked days carry their
+  medal tag.
 
 ### What counts as "sunny"
 

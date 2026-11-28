@@ -55,23 +55,31 @@ test('settings re-filter days; reversed or empty settings are handled', async ({
   await expect(page.locator('#best')).not.toContainText('NaN');
 });
 
-test('best days lists the next 4 qualifying days in date order', async ({ page }) => {
-  // Day 1 is rainy, so the panel should skip it and show days 0, 2, 3, 4.
-  await openPage(page, { marine: marineSine(16), weather: weatherDaily(16, (i) => (i === 1 ? { rain: 60 } : {})) });
-  const qualifying = (await days(page)).map((d, i) => (d.both ? i : null)).filter((i) => i != null);
-  expect(qualifying.length).toBeGreaterThan(4);
-  const shown = await page.locator('#best .best-row').evaluateAll((els) => els.map((e) => +e.dataset.i));
-  expect(shown).toEqual(qualifying.slice(0, 4));
+test('best days ranks the top 4 by score, best first, as platinum/gold/silver/bronze', async ({ page }) => {
+  // Day 1 is rainy (out); days 3 and 6 are cloudy and cool, so they score lower than the rest.
+  await openPage(page, { marine: marineSine(16), weather: weatherDaily(16, (i) => (i === 1 ? { rain: 70 } : i === 3 || i === 6 ? { code: 3, tmax: 18 } : {})) });
+  const ranked = await page.evaluate(() => state.days.map((d, i) => ({ i, s: d.score })).filter((x) => x.s != null && x.s >= MIN_SCORE)
+    .sort((a, b) => b.s - a.s || a.i - b.i).map((x) => x.i));
+  expect(ranked.length).toBeGreaterThan(4);
+  const shown = await page.locator('#best .day-row').evaluateAll((els) => els.map((e) => +e.dataset.i));
+  expect(shown).toEqual(ranked.slice(0, 4));
   expect(shown).not.toContain(1);
-  await expect(page.locator('#bestCount')).toHaveText(`Next 4 of ${qualifying.length}`);
-  await expect(page.locator('#best .best-row').first()).toContainText('Today');
-  await expect(page.locator('#maxRain')).toHaveCount(0);
+  await expect(page.locator('#best .medal')).toHaveText(['Platinum', 'Gold', 'Silver', 'Bronze']);
+  await expect(page.locator('#bestCount')).toHaveText(`Top 4 of ${ranked.length}`);
+  await expect(page.locator('#list .medal')).toHaveCount(4);
 });
 
-test('best days with fewer than 4 matches says so', async ({ page }) => {
-  await openPage(page, { marine: marineSine(3), weather: weatherDaily(3, (i) => (i === 2 ? { rain: 50 } : {})) });
-  await expect(page.locator('#best .best-row')).toHaveCount(2);
-  await expect(page.locator('#best')).toContainText('Only 2 days line up');
+test('medal scoring: sky, warmth, rain, tide timing; rain or cold days are out', async ({ page }) => {
+  const w = weatherDaily(7, (i) => [{}, { code: 2 }, { code: 3 }, { tmax: 19 }, { rain: 30 }, { code: 61 }, { tmax: 15 }][i]);
+  await openPage(page, { weather: w, marine: marinePeaks(7, [0, 1, 2, 3, 4, 5, 6].map((d) => d * 24 + 13.5)) });
+  expect(await page.evaluate(() => state.days.map((d) => d.score))).toEqual([8, 7, 6, 7, 7, null, null]);
+});
+
+test('best days with fewer than 4 ranked days shows just those', async ({ page }) => {
+  await openPage(page, { marine: marineSine(3), weather: weatherDaily(3, (i) => (i === 2 ? { rain: 70 } : {})) });
+  await expect(page.locator('#best .day-row')).toHaveCount(2);
+  await expect(page.locator('#bestCount')).toHaveText('2 days');
+  await expect(page.locator('#best')).not.toContainText('line up');
 });
 
 test('big swell (≥ 2.5 m) is flagged everywhere; small swell is not', async ({ page }) => {
@@ -79,13 +87,14 @@ test('big swell (≥ 2.5 m) is flagged everywhere; small swell is not', async ({
   const d = await days(page);
   expect(d.map((x) => x.bigSwell)).toEqual([false, false, true]);
   await expect(page.locator('#heroBadges')).toContainText('Swell 1.1 m');
-  await expect(page.locator('#list')).toContainText('3.2 m swell');
-  await page.click('.cal .cell[data-i="2"]');
+  await expect(page.locator('#list .v.big')).toHaveText(['3.2m']);
+  await page.click('#list .day-row[data-i="2"]');
   await expect(page.locator('#heroBadges')).toContainText('⚠️ Big swell 3.2 m');
 });
 
-test('safety wording: no "Beach day", Safeswim link present', async ({ page }) => {
+test('wording: no "Beach day", no swim-safety notice, no calendar card', async ({ page }) => {
   await openPage(page);
   expect(await page.content()).not.toContain('Beach day');
-  await expect(page.locator('#best a[href*="safeswim.org.nz"]')).toHaveCount(1);
+  await expect(page.locator('a[href*="safeswim.org.nz"]')).toHaveCount(0);
+  await expect(page.locator('#cal')).toHaveCount(0);
 });
