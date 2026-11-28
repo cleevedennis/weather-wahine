@@ -35,11 +35,8 @@ Weather Wahine is a static, dependency-free web page. There is no build step and
 `update(force)` drives it: fetch, analyse, render. Forecasts are cached per beach in `state.cache` for an hour.
 Changing a setting re-runs `analyse` on cached data; Refresh re-fetches.
 
-**All beaches** (the picker's first option, and the view the app always opens on): `fetchAll()` gets every beach in
-two requests — Open-Meteo takes comma-separated coordinates and returns one result per beach (the marine request
-leaves out the harbour beaches) — and fills `state.cache`. Each beach is analysed and ranked, then `medalDays()`
-puts each date once under its best medal at any beach. `renderChampion` · `renderTournament` · `renderMedalDays`
-draw it. Picking a beach afterwards reuses the cache, so it needs no new request.
+The picker remembers the last beach (saved with the settings in `localStorage`; an unknown value, such as the
+retired "All beaches", falls back to `DEFAULT_LOC`). Each beach is fetched on its own when first picked.
 
 ## Tide sources
 

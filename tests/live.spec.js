@@ -7,10 +7,8 @@ test.describe.configure({ mode: 'serial' });
 test('every beach loads real data with plausible tides, weather and swell', async ({ page }) => {
   const errors = []; page.on('pageerror', (e) => errors.push(e.message));
   await page.goto('/index.html');
-  await page.waitForFunction(() => state.key === 'All beaches' || /Couldn't/.test(document.getElementById('status').textContent), null, { timeout: 30_000 });
-  await expect(page.locator('#status'), 'All beaches loads').toContainText('Updated');
-  expect(await page.evaluate(() => state.beaches.length)).toBe(8);
-  const names = (await page.locator('#loc option').allTextContents()).slice(1);   // skip "All beaches"
+  const names = await page.locator('#loc option').allTextContents();
+  expect(names).toHaveLength(8);
   for (const n of names) {
     if ((await page.inputValue('#loc')) !== n) await page.selectOption('#loc', n);
     await page.waitForFunction((n) => (state.key === n && /Updated/.test(document.getElementById('status').textContent)) || /Couldn't/.test(document.getElementById('status').textContent), n, { timeout: 30_000 });
