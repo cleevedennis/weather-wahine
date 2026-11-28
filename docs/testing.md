@@ -59,7 +59,7 @@ Two things keep the gate deterministic:
 - Missing forecast days and tide gaps render without errors
 - No sideways scroll or clipped content on iPhone SE, Pixel 7, 320px and desktop
 - No axe-core accessibility violations; all tappable days keyboard-focusable
-- Calendar export: valid wrapper, `VTIMEZONE`, lines ≤ 75 bytes, unique UIDs — saved for the external validator
+- Calendar export: valid wrapper, `VTIMEZONE`, lines ≤ 75 bytes, unique UIDs, one event per medal day — saved for the external validator
 
 ## Mock helpers (`tests/helpers.js`)
 

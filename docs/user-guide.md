@@ -52,13 +52,10 @@ must be under 40% (fixed; it is no longer a setting). Early-morning drizzle does
 
 ## Calendar export
 
-Settings → **⤓ Add to calendar** downloads an `.ics` file with one event per matching day:
+Settings → **⤓ Add to calendar** downloads an `.ics` file with one event for each medal day in Best days: a 2-hour
+event centred on the high tide, e.g. *"★ Gold · High tide 1:12pm · 22°C · 5% rain · 1.1 m swell (Piha)"*.
 
-- Tide days: a 2-hour event centred on the high tide, e.g. *"★ High tide 1:12pm · Sunny 22°C (Piha)"*.
-- Sunny-only days: an all-day event.
-- Big-swell days add *"⚠ 3.1 m swell"*.
-
-Re-importing updates days that still match, but days that stop matching stay in your calendar — delete old ones.
+Re-importing updates days that still have a medal, but days that lose theirs stay in your calendar — delete old ones.
 
 ## Install on your iPhone
 
