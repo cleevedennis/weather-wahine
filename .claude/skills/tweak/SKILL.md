@@ -27,7 +27,7 @@ from it). Never force-push; never commit straight to `main`.
 | Beaches, coordinates, LINZ tide offsets, picker groups | `const ALL_LOCATIONS` (see `docs/tides.md` before changing offsets) |
 | Default beach | `const DEFAULT_LOC` |
 | Swell warning level | `const BIG_SWELL_M` |
-| Default tide window / min temp / rain limit | inputs `id="from"`, `id="to"`, `id="minTemp"`, `id="maxRain"` and `function settings()` fallbacks |
+| Default tide window / min temp / rain limit | inputs `id="from"`, `id="to"`, `id="minTemp"` and `function settings()` fallbacks; rain limit `const MAX_RAIN`; Best days count `const BEST_SHOWN` |
 | Colours, fonts, spacing | CSS tokens in `:root { … }` and `body[data-sky=…]`; motifs are inline SVG `url(...)` in the CSS |
 | Card headings (te reo · English) | `class="card-h"` |
 | Weather wording / icons | `const WMO` |

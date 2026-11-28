@@ -3,6 +3,9 @@
 ## Unreleased
 
 ### Changed
+- **Best days panel redesigned** as a scorecard: the next 4 qualifying days in date order, each showing tide time,
+  temperature and rain chance, with the rules listed at the top.
+- Rain rule is now a fixed "under 40%" (was a setting defaulting to 30% or less); the Max rain chance setting is gone.
 - Default high-tide window is now 11am–4pm (was 11am–3pm) and default minimum temperature is 22°C (was 20°C).
 
 ### Tooling

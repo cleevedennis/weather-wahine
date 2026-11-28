@@ -18,7 +18,6 @@ The tide card says which source is in use, e.g. *"Official LINZ prediction (Oneh
 |---|---|---|
 | High tide from / until | 11:00 – 16:00 | A high tide must fall inside this window. Both ends count. If "from" is later than "until" they're swapped. |
 | Minimum temp (°C) | 22 | The warmest hour inside the window must reach this. |
-| Max rain chance (%) | 30 | The highest hourly rain chance inside the window must not exceed this. |
 
 Empty or invalid entries fall back to the defaults. Settings are remembered on that device.
 
@@ -27,7 +26,10 @@ Empty or invalid entries fall back to the defaults. Settings are remembered on t
 - **Top section** — the selected day (tap any day to change it): high temperature, the weather **during your window**
   (labelled e.g. "11am–4pm"), high/low for the day, and badges for ★ Tide & sun, high-tide time, rain chance,
   swell height and UV. A red **⚠️ Big swell** badge appears at 2.5 m+.
-- **★ Ngā rā pai · Best days** — every day with both a high tide in your window and sunny weather, plus a safety note.
+- **★ Ngā rā pai · Best days** — the next 4 days (in date order) with a high tide in your window, your minimum
+  temperature, sunny or partly cloudy skies and under 40% rain. Each row shows the tide time, temperature and rain
+  chance, and a big-swell warning when it applies. The rules are listed at the top of the panel, and a note says when
+  fewer than 4 days line up. A safety note follows.
   If the tide source doesn't cover all 16 days, a note says when tide data ends.
 - **🌊 Te tai · Tide** — the day's tide curve with your window shaded, high-tide times, whether one falls in the window,
   and the tide source. On "Today" a dotted line marks the current time.
@@ -38,8 +40,8 @@ Empty or invalid entries fall back to the defaults. Settings are remembered on t
 ### What counts as "sunny"
 
 Judged hour by hour **inside your tide window**: every hour must be clear, mainly clear or partly cloudy
-(no fog, drizzle, rain or storms), the warmest hour must reach your minimum temperature, and no hour may exceed your
-rain-chance limit. Early-morning drizzle doesn't spoil a clear afternoon, and a day that only warms up at 5pm doesn't count.
+(no fog, drizzle, rain or storms), the warmest hour must reach your minimum temperature, and every hour's rain chance
+must be under 40% (fixed; it is no longer a setting). Early-morning drizzle doesn't spoil a clear afternoon, and a day that only warms up at 5pm doesn't count.
 
 ### Forecast range
 

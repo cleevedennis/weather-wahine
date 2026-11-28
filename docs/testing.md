@@ -21,12 +21,13 @@ Two things keep the gate deterministic:
 - **Service workers blocked** by default, so mocked network calls can't be bypassed. `tests/pwa.spec.js` enables them
   and mocks at the browser-context level instead, which also catches the worker's own requests.
 
-## What the gate covers (29 tests)
+## What the gate covers (31 tests)
 
 **Logic** (`tests/logic.spec.js`)
 - High-tide times within 3 minutes on a known curve, including a tide just before midnight
 - Window edges: 11:00 and 4:00pm count; 4:06pm and 10:54am don't
-- Daily fallback: exactly 22° counts; 21.9°, overcast and 31% rain don't
+- Daily fallback: exactly 22° and 39% rain count; 21.9°, overcast and 40% rain don't
+- Best days: next 4 qualifying days in date order (rainy day skipped, "Next 4 of N"); fewer than 4 shows a note
 - Hourly window: early drizzle with a clear window → sunny; drizzle at 1pm → not; warm only at 5pm → not
 - Settings: re-filtering, reversed window swapped, empty values fall back, no "NaN"
 - Swell ≥ 2.5 m flagged in hero, list and on selection; 1.1 m not

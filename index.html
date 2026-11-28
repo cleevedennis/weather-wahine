@@ -21,7 +21,7 @@
     --glass-strong: rgba(255, 255, 255, 0.22);
     --line: rgba(255, 255, 255, 0.18);
     --text: #ffffff; --muted: rgba(255, 255, 255, 0.82);
-    --tide: #6fd6cf; --sun: #f2c94c; --both: #ef8d5f;
+    --tide: #6fd6cf; --sun: #f2c94c; --both: #ef8d5f; --rain: #9cc8f0;
   }
   body[data-sky="clear"]    { --sky-a: #0b3a2c; --sky-b: #2f7f5c; }
   body[data-sky="partly"]   { --sky-a: #0f3830; --sky-b: #3d6e5e; }
@@ -84,11 +84,22 @@
   .summary-text { font-size: .95rem; padding: 2px 0 10px; border-bottom: 0.5px solid var(--line); margin-bottom: 6px; }
 
   /* Best days */
-  .best-row { display: flex; align-items: center; gap: 12px; padding: 9px 0; border-bottom: 0.5px solid var(--line); cursor: pointer; }
+  .best-rules { font-size: .75rem; color: var(--muted); padding: 0 0 4px; }
+  .best-rules span { white-space: nowrap; }
+  .best-row { display: grid; grid-template-columns: 20px minmax(0, 1fr) 26px 62px 38px 38px; align-items: center; gap: 8px;
+    padding: 9px 0; border-bottom: 0.5px solid var(--line); cursor: pointer; }
   .best-row:last-child { border-bottom: 0; }
-  .best-row .when { font-weight: 600; min-width: 92px; }
-  .best-row .what { color: var(--muted); font-size: .9rem; flex: 1; }
-  .best-row .t { font-weight: 600; }
+  .best-row .n { width: 20px; height: 20px; border-radius: 50%; background: rgba(0,0,0,.18); color: var(--both);
+    font-size: .72rem; font-weight: 700; display: grid; place-items: center; }
+  .best-row .when { min-width: 0; line-height: 1.15; }
+  .best-row .when b { display: block; font-size: .95rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .best-row .when small { color: var(--muted); font-size: .75rem; }
+  .best-row .ico { font-size: 1.25rem; text-align: center; line-height: 1; }
+  .best-row .stat { text-align: right; font-weight: 600; font-size: .9rem; line-height: 1.15; }
+  .best-row .stat small { display: block; font-size: .6rem; font-weight: 700; letter-spacing: .05em; text-transform: uppercase; }
+  .best-row .stat.tide small { color: var(--tide); } .best-row .stat.temp small { color: var(--sun); } .best-row .stat.rain small { color: var(--rain); }
+  .best-row .warn-line { grid-column: 2 / -1; font-size: .78rem; margin-top: -3px; }
+  .best-row.sel .when b { text-decoration: underline; text-underline-offset: 3px; text-decoration-thickness: 2px; }
   .empty-note { color: var(--muted); font-size: .9rem; padding: 6px 0 2px; }
 
   /* Tide chart */
@@ -213,7 +224,6 @@
     <div class="set-row"><span>High tide from</span><input type="time" id="from" value="11:00"></div>
     <div class="set-row"><span>High tide until</span><input type="time" id="to" value="16:00"></div>
     <div class="set-row"><span>Minimum temp (°C)</span><input type="number" id="minTemp" value="22" step="1" inputmode="numeric"></div>
-    <div class="set-row"><span>Max rain chance (%)</span><input type="number" id="maxRain" value="30" step="5" min="0" max="100" inputmode="numeric"></div>
     <div class="btns">
       <button class="btn" id="refresh">↻ Refresh</button>
       <button class="btn primary" id="ics">⤓ Add to calendar</button>
@@ -259,6 +269,8 @@ const DEFAULT_LOC = "Piha";
 const TZ = "Pacific/Auckland";
 const DAYS = 16;
 const BIG_SWELL_M = 2.5;   // waves at or above this get a surf warning
+const MAX_RAIN = 40;       // window rain chance must be under this (%) for a day to count as sunny
+const BEST_SHOWN = 4;      // how many upcoming days the Best days panel lists
 const windowLabel = () => `${fmtTime(settings().from).replace(":00", "")}–${fmtTime(settings().to).replace(":00", "")}`;
 const WMO = {
   0: ["Clear", "☀️", "clear"], 1: ["Mainly Clear", "🌤️", "clear"], 2: ["Partly Cloudy", "⛅️", "partly"],
@@ -279,7 +291,7 @@ const state = { data: null, key: null, days: [], sel: 0 };
 
 /* ---------- prefs ---------- */
 const currentLocValid = () => LOCATIONS.some((l) => l.name === $("loc").value);
-const PREF_IDS = ["loc", "from", "to", "minTemp", "maxRain"];
+const PREF_IDS = ["loc", "from", "to", "minTemp"];
 function savePrefs() {
   try { localStorage.setItem("ww-prefs", JSON.stringify(Object.fromEntries(PREF_IDS.map((k) => [k, $(k).value])))); } catch (e) {}
 }
@@ -298,7 +310,7 @@ function settings() {
   const n = (id, def) => { const v = parseFloat($(id).value); return Number.isFinite(v) ? v : def; };
   let from = t("from", "11:00"), to = t("to", "16:00");
   if (from > to) [from, to] = [to, from];
-  return { from, to, minTemp: n("minTemp", 22), maxRain: n("maxRain", 30) };
+  return { from, to, minTemp: n("minTemp", 22) };
 }
 const toMin = (hhmm) => { const [h, m] = String(hhmm).split(":").map(Number); return h * 60 + (m || 0); };
 const fmtTime = (mins) => {
@@ -378,7 +390,7 @@ function tideData({ loc, marine, weather }) {
 
 function analyse(data) {
   const { weather } = data;
-  const { from, to, minTemp, maxRain } = settings();
+  const { from, to, minTemp } = settings();
   const td = tideData(data);
   state.tideSource = td.source;
   const ht = td.time, hl = td.level, tides = td.highs;
@@ -406,7 +418,7 @@ function analyse(data) {
     const winCode = hourly ? max(wCodes) : code, winTemp = hourly ? max(wTemps) : tmax;
     const winRain = hourly ? max(pick(wh, "precipitation_probability", date)) : rain;
     const winCloud = mean(pick(wh, "cloud_cover", date));
-    const sunny = hasWeather && winCode <= 2 && winTemp >= minTemp && (winRain == null || winRain <= maxRain);
+    const sunny = hasWeather && winCode <= 2 && winTemp >= minTemp && (winRain == null || winRain < MAX_RAIN);
     const wave = max(pick(mh, "wave_height", date));
     const bigSwell = wave != null && wave >= BIG_SWELL_M;
     const tide = inWindow.length > 0;
@@ -435,19 +447,31 @@ function renderHero() {
 }
 
 function renderBest() {
-  const best = state.days.map((d, i) => ({ ...d, i })).filter((d) => d.both);
+  const all = state.days.map((d, i) => ({ ...d, i })).filter((d) => d.both);
+  const best = all.slice(0, BEST_SHOWN);
+  const { from, to, minTemp } = settings();
   const lastTide = [...state.days].reverse().find((d) => d.hasTide);
   const notice = state.tideSource === "pending"
     ? `<div class="notice">Tide times for ${currentLoc().name} aren't set up yet — they need its official LINZ tide offset. Sunny days still show.</div>`
     : lastTide && lastTide !== state.days.at(-1)
     ? `<div class="notice">Tide forecast runs to ${fmtDate(lastTide.date, { weekday: "short", day: "numeric", month: "short" })}; later days can't be checked for tides yet.</div>` : "";
-  $("bestCount").textContent = best.length ? `${best.length} day${best.length > 1 ? "s" : ""}` : "";
-  $("best").innerHTML = best.length
-    ? best.map((d) => `<div class="best-row" data-i="${d.i}">
-        <span class="when">${d.i === 0 ? "Today" : fmtDate(d.date, { weekday: "short", day: "numeric", month: "short" })}</span>
-        <span class="what">${wmo(d.winCode)[1]} High tide ${d.inWindow.map((t) => fmtTime(t.mins)).join(" & ")}${d.bigSwell ? ` <span class="warn-text">⚠️ ${d.wave.toFixed(1)} m swell</span>` : ""}</span>
-        <span class="t">${Math.round(d.winTemp)}°</span></div>`).join("")
-    : `<div class="empty-note">No days with both a ${fmtTime(settings().from)}–${fmtTime(settings().to)} high tide and sunny weather in the next ${state.days.length} days.</div>`;
+  $("bestCount").textContent = all.length > best.length ? `Next ${best.length} of ${all.length}`
+    : all.length ? `${all.length} day${all.length > 1 ? "s" : ""}` : "";
+  const dayName = (d) => (d.i === 0 ? "Today" : d.i === 1 ? "Tomorrow" : fmtDate(d.date, { weekday: "long" }));
+  const rules = `<div class="best-rules">${[`High tide ${fmtTime(from)}–${fmtTime(to)}`, `${minTemp}°+`, "sunny or partly cloudy",
+    `rain under ${MAX_RAIN}%`].map((r) => `<span>${r}</span>`).join(" · ")}</div>`;
+  const rows = best.map((d, k) => `<div class="best-row${d.i === state.sel ? " sel" : ""}" data-i="${d.i}">
+      <span class="n">${k + 1}</span>
+      <span class="when"><b>${dayName(d)}</b><small>${fmtDate(d.date, { day: "numeric", month: "short" })}</small></span>
+      <span class="ico" title="${wmo(d.winCode)[0]}">${wmo(d.winCode)[1]}</span>
+      <span class="stat tide"><small>Tide</small>${d.inWindow.map((t) => fmtTime(t.mins)).join(" & ")}</span>
+      <span class="stat temp"><small>Temp</small>${Math.round(d.winTemp)}°</span>
+      <span class="stat rain"><small>Rain</small>${d.winRain != null ? `${d.winRain}%` : "–"}</span>
+      ${d.bigSwell ? `<span class="warn-line warn-text">⚠️ ${d.wave.toFixed(1)} m swell — big surf</span>` : ""}</div>`).join("");
+  const few = best.length && best.length < BEST_SHOWN
+    ? `<div class="notice">Only ${best.length} day${best.length > 1 ? "s" : ""} line${best.length > 1 ? "" : "s"} up in the next ${state.days.length} days.</div>` : "";
+  $("best").innerHTML = rules + (best.length ? rows + few
+    : `<div class="empty-note">No days line up in the next ${state.days.length} days.</div>`);
   $("best").insertAdjacentHTML("beforeend", notice + `<div class="notice safety">★ means the tide and sun line up, not that it's safe to swim. West Coast beaches have strong rips and big surf — swim between the flags at patrolled beaches and check
     <a href="https://safeswim.org.nz/" target="_blank" rel="noopener">Safeswim</a> before you go.</div>`);
 }
@@ -548,7 +572,7 @@ function renderList() {
 function renderAll() { renderHero(); renderBest(); renderTide(); renderCal(); renderList(); }
 
 function select(i) {
-  state.sel = i; renderHero(); renderTide(); renderCal(); renderList();
+  state.sel = i; renderHero(); renderBest(); renderTide(); renderCal(); renderList();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 document.addEventListener("keydown", (e) => {
@@ -643,7 +667,7 @@ for (const group of [...new Set(LOCATIONS.map((l) => l.group))]) {
 $("loc").value = DEFAULT_LOC;
 loadPrefs();
 $("loc").addEventListener("change", () => { state.sel = 0; update(false); });
-for (const id of ["from", "to", "minTemp", "maxRain"]) $(id).addEventListener("change", () => update(false));
+for (const id of ["from", "to", "minTemp"]) $(id).addEventListener("change", () => update(false));
 $("refresh").addEventListener("click", () => update(true));
 // Offline support for the Home Screen app (needs http/https; skipped when opened from disk).
 if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
