@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Tooling
+- `/tweak` Claude Code skill for shipping batches of small changes (`.claude/skills/tweak/SKILL.md`).
+
 ### Changed
 - **All beaches now use official LINZ tide times** (NZ Nautical Almanac secondary-port differences from Onehunga).
   The model's West Coast tide times had been about an hour early.

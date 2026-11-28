@@ -51,6 +51,13 @@ tests/                   Playwright tests (offline gate + live canary)
 docs/                    Documentation
 ```
 
+## Making tweaks
+
+In a Claude Code session on this repo, type **`/tweak`** and list all your changes in one message (numbered, with
+screenshots for anything visual). The skill in `.claude/skills/tweak/SKILL.md` ships them as one PR that tests,
+auto-merges and deploys. To edit a file yourself on github.com, use **"Create a new branch… and start a pull
+request"**: a direct commit to `main` isn't deployed.
+
 ## Developing
 
 ```bash
