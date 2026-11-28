@@ -553,23 +553,17 @@ function toICS(days, locName) {
     "BEGIN:DAYLIGHT", "TZOFFSETFROM:+1200", "TZOFFSETTO:+1300", "TZNAME:NZDT", "DTSTART:19700927T020000", "RRULE:FREQ=YEARLY;BYMONTH=9;BYDAY=-1SU", "END:DAYLIGHT",
     "BEGIN:STANDARD", "TZOFFSETFROM:+1300", "TZOFFSETTO:+1200", "TZNAME:NZST", "DTSTART:19700405T030000", "RRULE:FREQ=YEARLY;BYMONTH=4;BYDAY=1SU", "END:STANDARD",
     "END:VTIMEZONE"];
+  // One event per medal day (the Best days panel): 2 hours centred on the first high tide in the window.
   for (const d of days) {
-    if (!d.tide && !d.sunny) continue;
+    if (!d.medal) continue;
     const ymd = d.date.replace(/-/g, "");
-    const parts = [];
-    if (d.tide) parts.push(`High tide ${d.inWindow.map((t) => fmtTime(t.mins)).join(" & ")}`);
-    if (d.sunny) parts.push(`Sunny ${Math.round(d.winTemp)}°C`);
-    if (d.bigSwell) parts.push(`⚠ ${d.wave.toFixed(1)} m swell`);
-    const summary = (d.both ? "★ " : d.tide ? "🌊 " : "☀️ ") + parts.join(" · ") + ` (${locName})`;
-    lines.push("BEGIN:VEVENT", `UID:${ymd}-${locName.replace(/\W+/g, "")}@weather-wahine`, `DTSTAMP:${stamp}`);
-    if (d.tide) {
-      const t = d.inWindow[0], s = Math.max(0, Math.round(t.mins) - 60), e = Math.min(1439, Math.round(t.mins) + 60);
-      lines.push(`DTSTART;TZID=${TZ}:${ymd}T${pad(Math.floor(s / 60))}${pad(s % 60)}00`, `DTEND;TZID=${TZ}:${ymd}T${pad(Math.floor(e / 60))}${pad(e % 60)}00`);
-    } else {
-      const next = new Date(d.date + "T00:00:00Z"); next.setUTCDate(next.getUTCDate() + 1);
-      lines.push(`DTSTART;VALUE=DATE:${ymd}`, `DTEND;VALUE=DATE:${next.toISOString().slice(0, 10).replace(/-/g, "")}`);
-    }
-    lines.push(`SUMMARY:${summary}`, "TRANSP:TRANSPARENT", "END:VEVENT");
+    const t = d.inWindow[0], s = Math.max(0, Math.round(t.mins) - 60), e = Math.min(1439, Math.round(t.mins) + 60);
+    const parts = [`★ ${cap(d.medal)}`, `High tide ${fmtTime(t.mins)}`, `${Math.round(d.winTemp)}°C`];
+    if (d.winRain != null) parts.push(`${d.winRain}% rain`);
+    if (d.wave != null) parts.push(`${d.wave.toFixed(1)} m swell`);
+    lines.push("BEGIN:VEVENT", `UID:${ymd}-${locName.replace(/\W+/g, "")}@weather-wahine`, `DTSTAMP:${stamp}`,
+      `DTSTART;TZID=${TZ}:${ymd}T${pad(Math.floor(s / 60))}${pad(s % 60)}00`, `DTEND;TZID=${TZ}:${ymd}T${pad(Math.floor(e / 60))}${pad(e % 60)}00`,
+      `SUMMARY:${parts.join(" · ")} (${locName})`, "TRANSP:TRANSPARENT", "END:VEVENT");
   }
   lines.push("END:VCALENDAR");
   return lines.map(foldLine).join("\r\n");

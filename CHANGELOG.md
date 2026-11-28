@@ -3,6 +3,8 @@
 ## Unreleased
 
 ### Changed
+- **Add to calendar** now exports the 4 medal days (e.g. "★ Gold · High tide 1:12pm · 22°C · 5% rain · 1.1 m swell"),
+  matching Best days; sunny-only all-day events are gone.
 - **Best days are now ranked** platinum, gold, silver and bronze — the 4 best days in the forecast, best first. Each
   day with a high tide in your window scores up to 9 points on sky, warmth against your minimum temperature, rain
   chance, how central the tide is, and swell (light weighting). Near-misses (a little cooler, some cloud) now rank

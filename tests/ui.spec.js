@@ -95,6 +95,11 @@ test('calendar export: valid structure, folded lines; saved for the external val
   expect(lines.filter((l) => Buffer.byteLength(l) > 75)).toEqual([]);
   const uids = lines.filter((l) => l.startsWith('UID:'));
   expect(new Set(uids).size).toBe(uids.length);
+  // One event per medal day, best first in the summary wording
+  expect(ics.match(/BEGIN:VEVENT/g)).toHaveLength(4);
+  const summaries = ics.replace(/\r\n /g, '').split('\r\n').filter((l) => l.startsWith('SUMMARY:'));
+  expect(summaries.map((l) => l.match(/★ (\w+)/)[1]).sort()).toEqual(['Bronze', 'Gold', 'Platinum', 'Silver']);
+  expect(summaries.every((l) => /High tide \d/.test(l) && l.endsWith('(Piha)'))).toBe(true);
   fs.mkdirSync('test-results/exports', { recursive: true });
   fs.writeFileSync(`test-results/exports/${info.project.name}-export.ics`, ics);
 });
