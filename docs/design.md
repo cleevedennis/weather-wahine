@@ -54,7 +54,23 @@ Every list of days uses one row layout (`dayRow()` in `index.html`), so the page
 | Warnings | Swell 2.5 m+ turns the value coral (`#ffb8a3`); no extra warning lines |
 | Selected day | Day text underlined |
 
-New lists of days should reuse this row rather than adding a new layout.
+New lists of days should reuse this row rather than adding a new layout. In **Medal days** (All beaches) the
+medal tag's line shows the top beach instead ("Piha +4 more"), because the medal is the group heading.
+
+## Medals
+
+Medals are score bands (out of 9), the same on every screen: **platinum 8–9, gold 6–7, silver 4–5, bronze 2–3**.
+A day can share a medal with other days (two golds, no platinum).
+
+## All beaches (default view)
+
+| Part | Detail |
+|---|---|
+| Picker | "🏆 All beaches" first; the app always opens on it (the beach isn't remembered) |
+| Top section | Champion day: the highest-scoring beach-day (ties → earlier date), its beaches ("Karekare & Piha +4 more platinum") and badges |
+| 🏆 Tournament card | Grid: beaches (grouped Manukau Harbour / West Coast) × days. Filled dot in the medal colour; hollow ring = high tide fits, no medal; faint speck = no high tide in window. Weekend dates in bone. Tap a dot → that beach on that day |
+| ★ Medal days card | Replaces the 16-day list: each day once, under its best medal at any beach, by date within a medal; stats are the top beach's. Days with no medal anywhere are left out |
+| Hidden | Best days, Tide and 16-day forecast cards (they return when a beach is picked) |
 
 ## Māori motifs
 
@@ -72,7 +88,8 @@ Chosen as general, widely shared motifs. Sacred or personal forms (e.g. tā moko
 
 | Heading | Meaning | Note |
 |---|---|---|
-| Ngā rā pai · Best days | the good days | |
+| Ngā rā pai · Best days / Medal days | the good days | |
+| Te whakataetae · Tournament | the competition | All beaches grid |
 | Te tai · Tide | the tide / sea | |
 | Matapae huarere · 16-day forecast | weather forecast | |
 | Tautuhinga · Settings | settings | |

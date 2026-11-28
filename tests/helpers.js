@@ -42,12 +42,21 @@ function weatherHourly(days, daily, hour) {
  * Open the page with mocked APIs. Any other non-local request is blocked so the gate never
  * depends on the network. `linz` optionally injects LINZ offsets into named beaches.
  */
-async function openPage(page, { marine = marineSine(), weather = weatherDaily(), marineStatus = 200, weatherStatus = 200, linz } = {}) {
+/** Answer like Open-Meteo: a list of coordinates (All beaches) gets one copy of the mock per beach. */
+const perCoord = (url, json) => {
+  const n = (new URL(url).searchParams.get('latitude') || '').split(',').length;
+  return n > 1 ? Array.from({ length: n }, () => json) : json;
+};
+
+/**
+ * `beach` (default Piha) is picked after the app opens on All beaches; pass `beach: null` to stay on All beaches.
+ */
+async function openPage(page, { marine = marineSine(), weather = weatherDaily(), marineStatus = 200, weatherStatus = 200, linz, beach = 'Piha' } = {}) {
   const errors = [], requests = [];
   page.on('pageerror', (e) => errors.push(e.message));
   await page.route(/^https?:\/\/(?!127\.0\.0\.1)/, (r) => r.abort());
-  await page.route('**/marine**', (r) => { requests.push(r.request().url()); return marineStatus === 'abort' ? r.abort() : r.fulfill({ status: marineStatus, json: marine }); });
-  await page.route('**/forecast**', (r) => { requests.push(r.request().url()); return r.fulfill({ status: weatherStatus, json: weather }); });
+  await page.route('**/marine**', (r) => { requests.push(r.request().url()); return marineStatus === 'abort' ? r.abort() : r.fulfill({ status: marineStatus, json: perCoord(r.request().url(), marine) }); });
+  await page.route('**/forecast**', (r) => { requests.push(r.request().url()); return r.fulfill({ status: weatherStatus, json: perCoord(r.request().url(), weather) }); });
   // LINZ offsets: by default every beach's offset is blanked so tides come from the mocked model data (that's
   // what most tests exercise). Pass `linz: { Beach: { hw, lw } }` to set specific ones, or `linz: 'real'` to keep
   // the offsets exactly as configured in index.html.
@@ -67,10 +76,14 @@ async function openPage(page, { marine = marineSine(), weather = weatherDaily(),
   await page.clock.setFixedTime(new Date(MOCK_NOW));
   await page.goto('/index.html');
   await page.waitForFunction(() => /Updated|Couldn't/.test(document.getElementById('status').textContent));
+  if (beach) {
+    await page.selectOption('#loc', beach);
+    await page.waitForFunction((b) => state.key === b || /Couldn't/.test(document.getElementById('status').textContent), beach);
+  }
   return { errors, requests };
 }
 const days = (page) => page.evaluate(() => state.days.map((d) => ({
   date: d.date, highs: d.highs.map((t) => Math.round(t.mins)), tide: d.tide, sunny: d.sunny, both: d.both,
   hasTide: d.hasTide, hourly: d.hourly, winTemp: d.winTemp, wave: d.wave, bigSwell: d.bigSwell })));
 
-module.exports = { MOCK_NOW, marineSine, marinePeaks, weatherDaily, weatherHourly, openPage, days, isoD };
+module.exports = { perCoord, MOCK_NOW, marineSine, marinePeaks, weatherDaily, weatherHourly, openPage, days, isoD };

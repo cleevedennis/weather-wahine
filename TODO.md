@@ -5,7 +5,7 @@
 - [ ] **Check on iPhone Safari:** frosted glass, time pickers, beach dropdown, .ics import.
 - [ ] **Install on iPhone** (once Pages is live): Add to Home Screen → check the sun icon and "Weather Wahine" label (iOS may shorten it), full-screen
       launch, then turn on Aeroplane Mode and reopen — it should show the saved forecast with the yellow offline note.
-- [ ] **Te reo & motif check by a speaker:** Ngā rā pai, Te tai, Maramataka (lunar-calendar nuance),
+- [ ] **Te reo & motif check by a speaker:** Ngā rā pai, Te whakataetae, Te tai, Maramataka (lunar-calendar nuance),
       Matapae huarere, Tautuhinga; koru / niho taniwha / poutama use.
 
 ## Then Claude does

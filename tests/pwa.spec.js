@@ -1,7 +1,7 @@
 // Home Screen web app: manifest, icons, and offline use via the service worker.
 const fs = require('fs');
 const { test, expect } = require('@playwright/test');
-const { MOCK_NOW, marineSine, weatherDaily } = require('./helpers');
+const { MOCK_NOW, marineSine, weatherDaily, perCoord } = require('./helpers');
 
 const pngSize = (file) => { const b = fs.readFileSync(file); return [b.readUInt32BE(16), b.readUInt32BE(20)]; };
 
@@ -29,8 +29,8 @@ async function mockApis(context) {
   const net = { online: true };
   const cors = { 'access-control-allow-origin': '*' };
   await context.route(/^https?:\/\/(?!127\.0\.0\.1|api\.open-meteo|marine-api\.open-meteo)/, (r) => r.abort());
-  await context.route('**/forecast**', (r) => (net.online ? r.fulfill({ json: weatherDaily(16), headers: cors }) : r.abort('internetdisconnected')));
-  await context.route('**/marine**', (r) => (net.online ? r.fulfill({ json: marineSine(16), headers: cors }) : r.abort('internetdisconnected')));
+  await context.route('**/forecast**', (r) => (net.online ? r.fulfill({ json: perCoord(r.request().url(), weatherDaily(16)), headers: cors }) : r.abort('internetdisconnected')));
+  await context.route('**/marine**', (r) => (net.online ? r.fulfill({ json: perCoord(r.request().url(), marineSine(16)), headers: cors }) : r.abort('internetdisconnected')));
   return net;
 }
 
@@ -52,6 +52,8 @@ test.describe('offline', () => {
     await page.reload();
     await expect(page.locator('#status')).toContainText('Offline — showing the forecast saved');
     await expect(page.locator('#heroTemp')).toHaveText('22°');
+    await expect(page.locator('#tour .nm')).toHaveCount(8);
+    await page.selectOption('#loc', 'Piha');                   // the saved All beaches copy covers each beach
     await expect(page.locator('#list .day-row')).toHaveCount(16);
 
     await context.setOffline(false); net.online = true;
@@ -71,7 +73,9 @@ test.describe('offline', () => {
     await page.clock.setFixedTime(new Date('2026-11-26T09:00:00+13:00'));   // three days later
     await page.reload();
     await expect(page.locator('#status')).toContainText('Offline');
-    expect(await page.evaluate(() => state.days[0].date)).toBe('2026-11-26');
+    expect(await page.evaluate(() => state.beaches.every((b) => b.days[0].date === '2026-11-26'))).toBe(true);
+    await expect(page.locator('#tour .nm').first().locator('~ .cell, ~ .speck')).not.toHaveCount(0);
+    await page.selectOption('#loc', 'Piha');
     await expect(page.locator('#list .day-row')).toHaveCount(13);
   });
 });

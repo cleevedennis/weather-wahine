@@ -66,7 +66,7 @@
     border-radius: 999px; padding: 5px 12px; font-size: .85rem; font-weight: 500; }
   .badge.both { background: rgba(150, 58, 28, .6); }
   .badge.warn { background: rgba(160, 30, 20, .65); }
-  .hero .cond .win { font-size: .8rem; font-weight: 500; color: var(--muted); margin-left: 4px; }
+  .hero .cond .win, .hero .hl .win { font-size: .8rem; font-weight: 500; color: var(--muted); margin-left: 4px; }
   .warn-text { color: #ffb8a3; font-weight: 600; white-space: nowrap; }
 
   /* Glass cards */
@@ -101,6 +101,28 @@
     border: 1px solid currentColor; border-radius: 999px; padding: 1px 6px; }
   .medal.platinum { color: var(--platinum); } .medal.gold { color: var(--gold); } .medal.silver { color: var(--silver); } .medal.bronze { color: var(--bronze); }
   .empty-note { color: var(--muted); font-size: .9rem; padding: 6px 0 2px; }
+  .day-row .beach { display: block; margin-top: 3px; font-size: .7rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .day-row .beach b { display: inline; color: #fff; font-size: inherit; }
+  .tier-h { display: flex; align-items: center; gap: 8px; padding: 10px 0 4px; }
+  .tier-h .medal { margin-top: 0; }
+  .tier-h .rule { flex: 1; height: 0.5px; background: var(--line); }
+  .tier-h .n { font-size: .7rem; color: var(--muted); }
+
+  /* All beaches: tournament grid (beaches × days) */
+  .tour { display: grid; column-gap: 2px; row-gap: 5px; align-items: center; justify-items: center; }
+  .tour .nm { justify-self: stretch; font-size: .7rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .tour .grp { grid-column: 1 / -1; justify-self: start; font-size: .58rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); padding-top: 4px; }
+  .tour .dh { font-size: .52rem; line-height: 1.15; text-align: center; font-weight: 700; color: var(--muted); }
+  .tour .dh.we { color: var(--bone); }
+  .tour .dh.today { text-decoration: underline; }
+  .cell { appearance: none; -webkit-appearance: none; border: 0; padding: 0; width: 13px; height: 13px; border-radius: 50%; cursor: pointer; background: transparent; }
+  .cell.platinum, .key .platinum { background: var(--platinum); } .cell.gold, .key .gold { background: var(--gold); }
+  .cell.silver, .key .silver { background: var(--silver); } .cell.bronze, .key .bronze { background: var(--bronze); }
+  .cell.out, .key .out { width: 9px; height: 9px; box-shadow: inset 0 0 0 1.5px rgba(255,255,255,.45); }
+  .speck, .key .speck { width: 4px; height: 4px; border-radius: 50%; background: rgba(255,255,255,.3); }
+  .key { display: flex; flex-wrap: wrap; gap: 6px 12px; margin-top: 12px; font-size: .7rem; color: var(--muted); }
+  .key span { display: inline-flex; align-items: center; gap: 5px; }
+  .key i { display: inline-block; width: 10px; height: 10px; border-radius: 50%; }
 
   /* Tide chart */
   .tide-svg { width: 100%; height: auto; display: block; overflow: visible; }
@@ -164,19 +186,29 @@
 
   <div class="status" id="status"></div>
 
-  <section class="card">
+  <section class="card" id="tourCard" hidden>
+    <div class="card-h">🏆 Te whakataetae <span class="en">· Tournament</span><span class="right" id="tourCount"></span></div>
+    <div id="tour"></div>
+  </section>
+
+  <section class="card" id="medalCard" hidden>
+    <div class="card-h">★ Ngā rā pai <span class="en">· Medal days</span><span class="right" id="medalCount"></span></div>
+    <div id="medals"></div>
+  </section>
+
+  <section class="card" id="bestCard">
     <div class="card-h">★ Ngā rā pai <span class="en">· Best days</span><span class="right" id="bestCount"></span></div>
     <div id="best"><div class="empty-note">Loading…</div></div>
   </section>
 
-  <section class="card">
+  <section class="card" id="tideCard">
     <div class="card-h">🌊 Te tai <span class="en">· Tide</span><span class="right" id="tideDay"></span></div>
     <svg class="tide-svg" id="tideSvg" viewBox="0 0 340 130" role="img" aria-label="Tide height through the day"></svg>
     <div class="tide-foot"><span id="tideHighs"></span><span id="tideWin"></span></div>
     <div class="notice" id="tideSrc"></div>
   </section>
 
-  <section class="card">
+  <section class="card" id="listCard">
     <div class="card-h">🗓 Matapae huarere <span class="en">· 16-day forecast</span></div>
     <div id="list"></div>
   </section>
@@ -198,8 +230,8 @@
     differ by up to about half an hour) — check
     <a href="https://www.linz.govt.nz/products-services/tides-and-tidal-streams/tide-predictions" target="_blank" rel="noopener">LINZ tide tables</a>
     before you go. Forecasts beyond ~7 days are a rough guide.<br>
-    Best days are ranked on your tide window: a high tide in it, sun, warmth against your min temp, rain chance and
-    swell. Swell of 2.5 m+ is shown in coral.<br>
+    Medals score your tide window out of 9 — a high tide in it, sun, warmth against your min temp, rain chance and
+    swell: platinum 8–9, gold 6–7, silver 4–5, bronze 2–3. Swell of 2.5 m+ is shown in coral.<br>
     Data: <a href="https://open-meteo.com/" target="_blank" rel="noopener">Open-Meteo</a> (CC BY 4.0) ·
     tide tables © <a href="https://www.linz.govt.nz/" target="_blank" rel="noopener">Toitū Te Whenua LINZ</a> (CC BY 4.0)
   </footer>
@@ -227,14 +259,17 @@ const ALL_LOCATIONS = [
 const usesLinz = (l) => l.linz?.hw != null && !!window.LINZ_TIDES;
 const tidesPending = (l) => l.harbour && !usesLinz(l);   // harbour beach still waiting for its LINZ offset
 const LOCATIONS = ALL_LOCATIONS;
-const DEFAULT_LOC = "Piha";
+const DEFAULT_LOC = "Piha";      // used when a beach is needed but none is picked
+const ALL = "All beaches";       // picker value for the tournament view; the app always opens on it
 const TZ = "Pacific/Auckland";
 const DAYS = 16;
 const BIG_SWELL_M = 2.5;   // waves at or above this get a surf warning
 const MAX_RAIN = 40;       // window rain chance must be under this (%) for a day to count as sunny
 const BEST_SHOWN = 4;      // how many ranked days the Best days panel lists
-const MEDALS = ["platinum", "gold", "silver", "bronze"];   // rank 1–4
+const MEDALS = ["platinum", "gold", "silver", "bronze"];   // best first
 const MIN_SCORE = 2;       // a day needs at least this many points (of 9) to be ranked
+// Medals are score bands, the same on every screen: platinum 8–9, gold 6–7, silver 4–5, bronze 2–3.
+const medalFor = (score) => (score == null || score < MIN_SCORE ? null : score >= 8 ? "platinum" : score >= 6 ? "gold" : score >= 4 ? "silver" : "bronze");
 const windowLabel = () => `${fmtTime(settings().from).replace(":00", "")}–${fmtTime(settings().to).replace(":00", "")}`;
 const WMO = {
   0: ["Clear", "☀️", "clear"], 1: ["Mainly Clear", "🌤️", "clear"], 2: ["Partly Cloudy", "⛅️", "partly"],
@@ -251,11 +286,13 @@ const WMO = {
 const wmo = (c) => WMO[c] || ["—", "🌡️", "overcast"];
 
 const $ = (id) => document.getElementById(id);
-const state = { data: null, key: null, days: [], sel: 0 };
+const state = { data: null, key: null, days: [], sel: 0, cache: {}, beaches: [], medalDays: [] };
+const isAll = () => $("loc").value === ALL;
+const FRESH_MS = 3600e3;   // reuse a fetched forecast for up to an hour
 
 /* ---------- prefs ---------- */
-const currentLocValid = () => LOCATIONS.some((l) => l.name === $("loc").value);
-const PREF_IDS = ["loc", "from", "to", "minTemp"];
+// The beach isn't saved: the app always opens on All beaches.
+const PREF_IDS = ["from", "to", "minTemp"];
 function savePrefs() {
   try { localStorage.setItem("ww-prefs", JSON.stringify(Object.fromEntries(PREF_IDS.map((k) => [k, $(k).value])))); } catch (e) {}
 }
@@ -263,7 +300,6 @@ function loadPrefs() {
   try {
     const p = JSON.parse(localStorage.getItem("ww-prefs") || "null");
     if (p) for (const k of PREF_IDS) if (p[k] != null && p[k] !== "") $(k).value = p[k];
-    if (!currentLocValid()) $("loc").value = DEFAULT_LOC; // old saved value (list position or removed beach)
   } catch (e) {}
 }
 
@@ -307,22 +343,44 @@ function findHighTides(times, levels) {
   return out;
 }
 
+const WEATHER_VARS = "daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunshine_duration,uv_index_max&hourly=weather_code,temperature_2m,precipitation_probability,cloud_cover";
+const coordQuery = (locs) => `latitude=${locs.map((l) => l.lat).join(",")}&longitude=${locs.map((l) => l.lon).join(",")}&timezone=${encodeURIComponent(TZ)}&forecast_days=${DAYS}`;
+const firstSaved = (...res) => res.map((r) => r?.ok && r.headers.get("sw-fetched-at")).filter(Boolean).sort()[0] || null;
+
 async function fetchData(loc) {
-  const q = `latitude=${loc.lat}&longitude=${loc.lon}&timezone=${encodeURIComponent(TZ)}&forecast_days=${DAYS}`;
+  const q = coordQuery([loc]);
   const linz = usesLinz(loc);
   // Harbour beaches skip the marine feed: its tides and open-ocean swell don't apply inside the Manukau.
   const [m, w] = await Promise.all([
     loc.harbour ? Promise.resolve(null)
       : fetch(`https://marine-api.open-meteo.com/v1/marine?${q}&hourly=${linz ? "" : "sea_level_height_msl,"}wave_height&cell_selection=sea`).catch(() => null),
-    fetch(`https://api.open-meteo.com/v1/forecast?${q}&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunshine_duration,uv_index_max&hourly=weather_code,temperature_2m,precipitation_probability,cloud_cover`),
+    fetch(`https://api.open-meteo.com/v1/forecast?${q}&${WEATHER_VARS}`),
   ]);
   // Waves are optional; the marine feed is only essential when it is also the tide source.
   if (!linz && !loc.harbour && !m?.ok) throw new Error(`tide data unavailable (${m ? m.status : "offline"})`);
   if (!w.ok) throw new Error(`weather unavailable (${w.status})`);
   // Set by the service worker when it answered from its offline copy.
-  const savedAt = [w, m].map((r) => r?.ok && r.headers.get("sw-fetched-at")).filter(Boolean).sort()[0] || null;
-  return { loc, marine: m?.ok ? await m.json() : null, weather: await w.json(), savedAt };
+  return { loc, marine: m?.ok ? await m.json() : null, weather: await w.json(), savedAt: firstSaved(w, m), fetchedAt: Date.now() };
 }
+
+// Every beach in two requests: Open-Meteo takes a list of coordinates and returns one result per beach.
+async function fetchAll() {
+  const sea = LOCATIONS.filter((l) => !l.harbour), modelTides = sea.some((l) => !usesLinz(l));
+  const [m, w] = await Promise.all([
+    sea.length ? fetch(`https://marine-api.open-meteo.com/v1/marine?${coordQuery(sea)}&hourly=${modelTides ? "sea_level_height_msl," : ""}wave_height&cell_selection=sea`).catch(() => null) : null,
+    fetch(`https://api.open-meteo.com/v1/forecast?${coordQuery(LOCATIONS)}&${WEATHER_VARS}`),
+  ]);
+  if (modelTides && !m?.ok) throw new Error(`tide data unavailable (${m ? m.status : "offline"})`);
+  if (!w.ok) throw new Error(`weather unavailable (${w.status})`);
+  const list = (j) => (Array.isArray(j) ? j : [j]);
+  const ws = list(await w.json()), ms = m?.ok ? list(await m.json()) : [];
+  const savedAt = firstSaved(w, m), fetchedAt = Date.now();
+  LOCATIONS.forEach((loc, k) => {
+    const si = sea.indexOf(loc);
+    state.cache[loc.name] = { loc, weather: ws[k], marine: si >= 0 ? ms[si] ?? null : null, savedAt, fetchedAt };
+  });
+}
+const isFresh = (c) => c && Date.now() - c.fetchedAt < FRESH_MS;
 
 // Tides from the bundled LINZ tables: shift Onehunga extremes by the beach's secondary-port
 // differences, then draw a smooth curve between them (cosine interpolation, 20-min steps).
@@ -420,25 +478,38 @@ function renderHero() {
   $("heroBadges").innerHTML = b.join("");
 }
 
-// Rank days by score (ties → earlier date); the top 4 get platinum, gold, silver, bronze.
+// Every day scoring 2+ gets its band's medal; ranked best first (ties → earlier date). Best days shows the top 4.
 function rankDays(days) {
-  const ranked = days.map((d, i) => ({ d, i })).filter(({ d }) => d.score != null && d.score >= MIN_SCORE)
-    .sort((a, b) => b.d.score - a.d.score || a.i - b.i);
-  days.forEach((d) => (d.medal = null));
-  ranked.slice(0, BEST_SHOWN).forEach(({ d }, k) => (d.medal = MEDALS[k]));
-  return ranked;
+  days.forEach((d) => (d.medal = medalFor(d.score)));
+  return days.map((d, i) => ({ d, i })).filter(({ d }) => d.medal).sort((a, b) => b.d.score - a.d.score || a.i - b.i);
+}
+
+// All beaches: each day once, under its best medal at any beach, with the beaches that share that medal.
+function medalDays(beaches) {
+  const out = [];
+  beaches[0].days.forEach((_, i) => {
+    const hits = beaches.map((b) => ({ loc: b.loc, d: b.days[i] })).filter((x) => x.d?.medal)
+      .sort((a, b) => b.d.score - a.d.score);
+    if (!hits.length) return;
+    const tier = hits[0].d.medal;
+    out.push({ i, tier, best: hits[0], beaches: hits.filter((x) => x.d.medal === tier) });
+  });
+  return out.sort((a, b) => b.best.d.score - a.best.d.score || a.i - b.i);
 }
 
 const cap = (s) => s[0].toUpperCase() + s.slice(1);
 const DAY_HEAD = `<div class="day-head"><span></span><span></span><span class="t">Tide</span><span class="s">Temp</span><span class="r">Rain</span><span class="w">Swell</span></div>`;
 // One row layout for both cards: day + medal tag, icon, tide in window, window temp, rain chance, swell.
-function dayRow(d, i) {
+// opt.beach (All beaches): show the beach and "+N more" in place of the medal tag; tapping opens that beach.
+function dayRow(d, i, opt) {
   const dm = { day: "numeric", month: "short" };
   const long = i === 0 ? `Today, ${fmtDate(d.date, dm)}` : fmtDate(d.date, { weekday: "long", ...dm });
   const short = i === 0 ? "Today" : fmtDate(d.date, { weekday: "short", ...dm });
   const v = (val, cls = "") => `<span class="v${val == null ? " dim" : cls}">${val ?? "—"}</span>`;
-  return `<div class="day-row${d.hasWeather ? "" : " skeleton"}${i === state.sel ? " sel" : ""}" data-i="${i}">
-      <span class="when"><b class="long">${long}</b><b class="short">${short}</b>${d.medal ? `<span class="medal ${d.medal}">${cap(d.medal)}</span>` : ""}</span>
+  const tag = opt ? `<span class="beach"><b>${opt.beach}</b>${opt.more ? ` +${opt.more} more` : ""}</span>`
+    : d.medal ? `<span class="medal ${d.medal}">${cap(d.medal)}</span>` : "";
+  return `<div class="day-row${d.hasWeather ? "" : " skeleton"}${!opt && i === state.sel ? " sel" : ""}" data-i="${i}"${opt ? ` data-b="${opt.beach}"` : ""}>
+      <span class="when"><b class="long">${long}</b><b class="short">${short}</b>${tag}</span>
       <span class="ico"${d.hasWeather ? ` title="${wmo(d.winCode)[0]}"` : ""}>${d.hasWeather ? wmo(d.winCode)[1] : "–"}</span>
       ${v(d.tide ? fmtTime(d.inWindow[0].mins) : null)}${v(d.hasWeather ? `${Math.round(d.winTemp)}°` : null)}
       ${v(d.winRain != null ? `${d.winRain}%` : null)}${v(d.wave != null ? `${d.wave.toFixed(1)}m` : null, d.bigSwell ? " big" : "")}
@@ -518,6 +589,72 @@ function renderList() {
 
 function renderAll() { renderHero(); renderBest(); renderTide(); renderList(); }
 
+/* ---------- All beaches (tournament) ---------- */
+function setMode(all) {
+  for (const id of ["tourCard", "medalCard"]) $(id).hidden = !all;
+  for (const id of ["bestCard", "tideCard", "listCard"]) $(id).hidden = all;
+}
+const longDate = (date, i) => (i === 0 ? `Today, ${fmtDate(date, { day: "numeric", month: "short" })}` : fmtDate(date, { weekday: "long", day: "numeric", month: "short" }));
+
+function renderChampion() {
+  const c = state.medalDays[0];
+  $("dayLabel").textContent = `Champion day · next ${state.beaches[0].days.length} days`;
+  if (!c) {
+    document.body.dataset.sky = "overcast";
+    $("heroTemp").textContent = "--°"; $("heroCond").textContent = "No medal days yet"; $("heroHL").textContent = "at any beach";
+    $("heroBadges").innerHTML = ""; return;
+  }
+  const { d } = c.best, names = c.beaches.map((x) => x.loc.name), more = names.length - 2;
+  document.body.dataset.sky = wmo(d.winCode)[2];
+  $("heroTemp").textContent = `${Math.round(d.winTemp)}°`;
+  $("heroCond").textContent = longDate(d.date, c.i);
+  $("heroHL").innerHTML = `${names.slice(0, 2).join(" &amp; ")}${more > 0 ? ` <span class="win">+${more} more ${c.tier}</span>` : ""}`;
+  const b = [`<span class="badge both">★ ${cap(c.tier)} day</span>`, `<span class="badge">🌊 High ${fmtTime(d.inWindow[0].mins)}</span>`];
+  if (d.winRain != null) b.push(`<span class="badge">💧 ${d.winRain}%</span>`);
+  if (d.wave != null) b.push(`<span class="badge${d.bigSwell ? " warn" : ""}">${d.bigSwell ? "⚠️ Big swell" : "Swell"} ${d.wave.toFixed(1)} m</span>`);
+  $("heroBadges").innerHTML = b.join("");
+}
+
+function renderTournament() {
+  const days = state.beaches[0].days;
+  const cells = (b) => b.days.map((d, i) => {
+    const what = `${b.loc.name}, ${longDate(d.date, i)}`;
+    if (d.medal) return `<button class="cell ${d.medal}" data-i="${i}" data-b="${b.loc.name}" aria-label="${what}: ${cap(d.medal)}, ${d.score} points"></button>`;
+    if (d.tide && d.hasWeather) return `<button class="cell out" data-i="${i}" data-b="${b.loc.name}" aria-label="${what}: high tide fits, no medal"></button>`;
+    return `<span class="speck" aria-hidden="true"></span>`;
+  }).join("");
+  let html = `<div class="tour" style="grid-template-columns: minmax(0, 1fr) repeat(${days.length}, minmax(0, 14px))"><span></span>`;
+  html += days.map((d, i) => {
+    const wd = dateObj(d.date).getUTCDay();
+    return `<span class="dh${wd % 6 === 0 ? " we" : ""}${i === 0 ? " today" : ""}" aria-hidden="true">${fmtDate(d.date, { weekday: "narrow" })}<br>${fmtDate(d.date, { day: "numeric" })}</span>`;
+  }).join("");
+  let group = null;
+  for (const b of state.beaches) {
+    if (b.loc.group !== group) { group = b.loc.group; html += `<span class="grp">${group}</span>`; }
+    html += `<span class="nm">${b.loc.name}</span>${cells(b)}`;
+  }
+  html += `</div><div class="key">${MEDALS.map((m, k) => `<span><i class="${m}"></i>${cap(m)} ${[`8–9`, `6–7`, `4–5`, `2–3`][k]}</span>`).join("")}
+    <span><i class="out"></i>High tide fits, no medal</span><span><i class="speck"></i>No high tide in window</span></div>
+    <div class="notice">Tap a dot to open that beach on that day.</div>`;
+  $("tour").innerHTML = html;
+  const n = state.beaches.reduce((s, b) => s + b.days.filter((d) => d.medal).length, 0);
+  $("tourCount").textContent = `${n} medal${n === 1 ? "" : "s"}`;
+}
+
+function renderMedalDays() {
+  const md = state.medalDays;
+  $("medalCount").textContent = md.length ? `${md.length} day${md.length === 1 ? "" : "s"}` : "";
+  if (!md.length) { $("medals").innerHTML = `<div class="empty-note">No medal days at any beach in the next ${state.beaches[0].days.length} days.</div>`; return; }
+  const intro = `<div class="best-rules">Each day sits under its best medal at any beach, on high tide ${windowLabel()}. Stats are for the top beach.</div>`;
+  // Within a medal, by date: the medal already says how good the day is.
+  const tiers = MEDALS.map((m) => ({ m, days: md.filter((x) => x.tier === m).sort((a, b) => a.i - b.i) })).filter((t) => t.days.length);
+  $("medals").innerHTML = intro + DAY_HEAD + tiers.map(({ m, days }) =>
+    `<div class="tier-h"><span class="medal ${m}">${cap(m)}</span><span class="rule"></span><span class="n">${days.length} day${days.length === 1 ? "" : "s"}</span></div>`
+    + days.map((x) => dayRow(x.best.d, x.i, { beach: x.best.loc.name, more: x.beaches.length - 1 })).join("")).join("")
+    + `<div class="notice">Days with no medal at any beach are left out. Pick a beach for its full forecast.</div>`;
+}
+function renderAllBeaches() { renderChampion(); renderTournament(); renderMedalDays(); }
+
 function select(i) {
   state.sel = i; renderAll();
   window.scrollTo({ top: 0, behavior: "smooth" });
@@ -530,7 +667,11 @@ new MutationObserver(() => document.querySelectorAll("[data-i]:not([tabindex])")
   .observe(document.querySelector("main"), { childList: true, subtree: true });
 document.addEventListener("click", (e) => {
   const el = e.target.closest("[data-i]");
-  if (el && state.days.length) select(Number(el.dataset.i));
+  if (!el) return;
+  if (el.dataset.b) {   // All beaches: open that beach on that day
+    $("loc").value = el.dataset.b; state.sel = Number(el.dataset.i);
+    update(false).then(() => window.scrollTo({ top: 0, behavior: "smooth" }));
+  } else if (state.days.length) select(Number(el.dataset.i));
 });
 
 /* ---------- calendar export ---------- */
@@ -545,17 +686,17 @@ function foldLine(line) {
   out.push(cur);
   return out.join("\r\n ");
 }
-function toICS(days, locName) {
+// entries: [{ d, name }] — a medal day and its beach.
+function toICS(entries, calName) {
   const pad = (n) => String(n).padStart(2, "0");
   const stamp = new Date().toISOString().replace(/[-:]/g, "").slice(0, 15) + "Z";
-  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Weather Wahine//EN", "CALSCALE:GREGORIAN", `X-WR-CALNAME:Weather Wahine – ${locName}`,
+  const lines = ["BEGIN:VCALENDAR", "VERSION:2.0", "PRODID:-//Weather Wahine//EN", "CALSCALE:GREGORIAN", `X-WR-CALNAME:Weather Wahine – ${calName}`,
     "BEGIN:VTIMEZONE", `TZID:${TZ}`,
     "BEGIN:DAYLIGHT", "TZOFFSETFROM:+1200", "TZOFFSETTO:+1300", "TZNAME:NZDT", "DTSTART:19700927T020000", "RRULE:FREQ=YEARLY;BYMONTH=9;BYDAY=-1SU", "END:DAYLIGHT",
     "BEGIN:STANDARD", "TZOFFSETFROM:+1300", "TZOFFSETTO:+1200", "TZNAME:NZST", "DTSTART:19700405T030000", "RRULE:FREQ=YEARLY;BYMONTH=4;BYDAY=1SU", "END:STANDARD",
     "END:VTIMEZONE"];
-  // One event per medal day (the Best days panel): 2 hours centred on the first high tide in the window.
-  for (const d of days) {
-    if (!d.medal) continue;
+  // One event per day: 2 hours centred on the first high tide in the window.
+  for (const { d, name: locName } of entries) {
     const ymd = d.date.replace(/-/g, "");
     const t = d.inWindow[0], s = Math.max(0, Math.round(t.mins) - 60), e = Math.min(1439, Math.round(t.mins) + 60);
     const parts = [`★ ${cap(d.medal)}`, `High tide ${fmtTime(t.mins)}`, `${Math.round(d.winTemp)}°C`];
@@ -573,24 +714,36 @@ function toICS(days, locName) {
 const todayNZ = () => new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(new Date()); // YYYY-MM-DD
 const currentLoc = () => LOCATIONS.find((l) => l.name === $("loc").value) || LOCATIONS.find((l) => l.name === DEFAULT_LOC);
 async function update(force) {
-  const loc = currentLoc();
+  const all = isAll(), loc = currentLoc();
   savePrefs();
   const st = $("status"); st.className = "status";
+  // Drop days that are already past (an offline copy may be a few days old).
+  const upcoming = (data) => analyse(data).filter((d) => d.date >= todayNZ());
   try {
-    if (force || state.key !== loc.name) {
-      st.textContent = `Updating ${loc.name}…`;
-      state.data = await fetchData(loc); state.key = loc.name; state.fetchedAt = Date.now();
+    let savedAt;
+    if (all) {
+      if (force || !LOCATIONS.every((l) => isFresh(state.cache[l.name]))) { st.textContent = "Updating all beaches…"; await fetchAll(); }
+      const cached = LOCATIONS.map((l) => state.cache[l.name]);
+      state.beaches = cached.map((data) => { const days = upcoming(data); rankDays(days); return { loc: data.loc, days }; });
+      if (!state.beaches[0].days.length) throw new Error("the saved forecast is too old");
+      state.medalDays = medalDays(state.beaches);
+      state.key = ALL; state.days = []; state.fetchedAt = Math.min(...cached.map((c) => c.fetchedAt));
+      savedAt = cached.map((c) => c.savedAt).filter(Boolean).sort()[0];
+      setMode(true); renderAllBeaches();
+    } else {
+      if (force || !isFresh(state.cache[loc.name])) { st.textContent = `Updating ${loc.name}…`; state.cache[loc.name] = await fetchData(loc); }
+      state.data = state.cache[loc.name]; state.key = loc.name; state.fetchedAt = state.data.fetchedAt;
+      state.days = upcoming(state.data);
+      if (!state.days.length) throw new Error("the saved forecast is too old");
+      state.ranked = rankDays(state.days);
+      state.sel = Math.min(state.sel, state.days.length - 1);
+      savedAt = state.data.savedAt;
+      setMode(false); renderAll();
     }
-    // Drop days that are already past (an offline copy may be a few days old).
-    state.days = analyse(state.data).filter((d) => d.date >= todayNZ());
-    if (!state.days.length) throw new Error("the saved forecast is too old");
-    state.ranked = rankDays(state.days);
-    state.sel = Math.min(state.sel, state.days.length - 1);
-    renderAll();
     const t = (d) => d.toLocaleString("en-NZ", { timeZone: TZ, hour: "numeric", minute: "2-digit", weekday: "short", day: "numeric", month: "short" });
-    if (state.data.savedAt) {
+    if (savedAt) {
       st.className = "status offline";
-      st.textContent = `Offline — showing the forecast saved ${t(new Date(state.data.savedAt))}`;
+      st.textContent = `Offline — showing the forecast saved ${t(new Date(savedAt))}`;
     } else {
       st.textContent = `Updated ${new Date().toLocaleTimeString("en-NZ", { hour: "numeric", minute: "2-digit" })}`;
     }
@@ -601,12 +754,13 @@ async function update(force) {
   }
 }
 
+$("loc").appendChild(new Option(`🏆 ${ALL}`, ALL));
 for (const group of [...new Set(LOCATIONS.map((l) => l.group))]) {
   const og = document.createElement("optgroup"); og.label = group;
   LOCATIONS.filter((l) => l.group === group).forEach((l) => og.appendChild(new Option(l.name, l.name)));
   $("loc").appendChild(og);
 }
-$("loc").value = DEFAULT_LOC;
+$("loc").value = ALL;
 loadPrefs();
 $("loc").addEventListener("change", () => { state.sel = 0; update(false); });
 for (const id of ["from", "to", "minTemp"]) $(id).addEventListener("change", () => update(false));
@@ -616,11 +770,15 @@ if ("serviceWorker" in navigator && location.protocol.startsWith("http")) {
   navigator.serviceWorker.register("sw.js").catch(() => {});
 }
 $("ics").addEventListener("click", () => {
-  if (!state.days.length) return;
-  const loc = currentLoc();
-  const blob = new Blob([toICS(state.days, loc.name)], { type: "text/calendar" });
+  // All beaches: every medal day at its top beach. One beach: its Best days.
+  const all = state.key === ALL, loc = currentLoc();
+  const entries = all ? state.medalDays.map((x) => ({ d: x.best.d, name: x.best.loc.name }))
+    : (state.ranked || []).slice(0, BEST_SHOWN).map(({ d }) => ({ d, name: loc.name }));
+  if (!entries.length) return;
+  const name = all ? ALL : loc.name;
+  const blob = new Blob([toICS(entries, name)], { type: "text/calendar" });
   const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
-  a.download = `weather-wahine-${loc.name.split(" ")[0].toLowerCase()}.ics`; a.click();
+  a.download = `weather-wahine-${all ? "all" : loc.name.split(" ")[0].toLowerCase()}.ics`; a.click();
   setTimeout(() => URL.revokeObjectURL(a.href), 1000);
 });
 // Home-screen apps resume old pages: refetch if the data is over an hour old or from a previous day.
