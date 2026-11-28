@@ -1,0 +1,2 @@
+400 https://single-runs-api.open-meteo.com/v1/forecast?latitude=-36.954&longitude=174.469&timezone=Pacific%2FAuckland&run=2025-01-10T00:00&models=ecmwf_ifs025&hourly=weather_code,temperature_2m,precipitation_probability,cloud_cover
+{"error":true,"reason":"The requested model run is not available. Model: ecmwf_ifs025, run: 2025-01-10T00:00Z"}

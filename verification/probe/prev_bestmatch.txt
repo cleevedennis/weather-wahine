@@ -1,0 +1,2 @@
+ERR https://previous-runs-api.open-meteo.com/v1/forecast?latitude=-36.954&longitude=174.469&timezone=Pacific%2FAuckland&start_date=2025-01-10&end_date=2025-01-11&hourly=weather_code,weather_code_previous_day1,weather_code_previous_day7,temperature_2m,temperature_2m_previous_day1,temperature_2m_previous_day7,precipitation_probability,precipitation_probability_previous_day1,precipitation_probability_previous_day7,cloud_cover,cloud_cover_previous_day1,cloud_cover_previous_day7
+TimeoutError('The read operation timed out')

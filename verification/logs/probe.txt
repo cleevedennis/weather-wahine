@@ -1,0 +1,16 @@
+prev_bestmatch ERR 44
+prev_ecmwf025 200 4282
+prev_gfs 200 3892
+prev_wind 200 1697
+prev_marine 200 1733
+marine_archive 200 1431
+single_ecmwf 200 13749
+single_ecmwf_ens 400 111
+era5_default 200 2523
+era5_explicit 200 1867
+linz_2025 200 19492
+linz_2024 200 19538
+envauckland_home 200 29779
+envauckland_list 200 29802
+lawa_piha 403 11680
+geonet_tilde_stations 400 424
