@@ -49,7 +49,7 @@ Every list of days uses one row layout (`dayRow()` in `index.html`), so the page
 |---|---|
 | Day | "Thursday, 10 Dec" ("Today, 28 Nov"); below 380px wide, "Thu, 10 Dec" |
 | Medal tag | Its own line under the day: a thin outlined pill in the medal colour, upper-case (PLATINUM, GOLD, SILVER, BRONZE). Only ranked days have one |
-| Columns | Weather icon · Tide (first high in window, "—" if none) · Temp (window) · Rain (window) · Swell |
+| Columns | Weather icon (line icon: sun, partly, cloud, fog, rain, snow, storm) · Tide (first high in window, "—" if none) · Temp (window) · Rain (window) · Swell |
 | Column labels | Once per card, above the rows, coloured `--tide` / `--sun` / `--rain` / `--swell` |
 | Warnings | Swell 2.5 m+ turns the value coral (`#ffb8a3`); no extra warning lines |
 | Selected day | Day text underlined |
@@ -66,9 +66,9 @@ A day can share a medal with other days (two golds, no platinum).
 
 | Part | Detail |
 |---|---|
-| Picker | "🏆 All beaches" first; the app always opens on it (the beach isn't remembered) |
+| Picker | "All beaches" first, with a gold line trophy beside it; the app always opens on it (the beach isn't remembered) |
 | Top section | Champion day: the highest-scoring beach-day (ties → earlier date), its beaches ("Karekare & Piha +4 more platinum") and badges |
-| 🏆 Tournament card | Grid: beaches (grouped Manukau Harbour / West Coast) × days. Filled dot in the medal colour; hollow ring = high tide fits, no medal; faint speck = no high tide in window. Weekend dates in bone. Tap a dot → that beach on that day |
+| Tournament card | Grid: beaches (grouped Manukau Harbour / West Coast) × days. Filled dot in the medal colour; hollow ring = high tide fits, no medal; faint speck = no high tide in window. Weekend dates in bone. Tap a dot → that beach on that day |
 | ★ Medal days card | Replaces the 16-day list, grouped by medal, by date within a medal. A switch (pill toggle) picks **All** (default: one row per beach-day with a medal, beach named under the date) or **Best per day** (each day once under its best medal; stats are the top beach's, "+N more"). Days with no medal anywhere are left out |
 | Hidden | Best days, Tide and 16-day forecast cards (they return when a beach is picked) |
 
@@ -120,8 +120,10 @@ sample data and markup are never copied into the app.
 
 **Canvas baseline:** version `1795854648-e189` (audited 2026-11-28).
 
-Differences found in the first audit (canvas vs app), pending a decision on each:
-- Weather icons: canvas uses line icons; the app uses emoji (rows, hero chips and card headings).
+Icons are stroked line SVGs (`ICON` in `index.html`), as on the canvas; no emoji anywhere on the page. Card
+headings carry no icon.
+
+Known differences (decided 2026-11-28: the app is right; the canvas is being synced to match):
 - Medal days: canvas shows one row per day under its best medal with "+N more"; the app defaults to **All** (one row
   per beach-day) with an All | Best per day switch (shipped in PR 19 after the canvas was drawn).
 - Tournament key: canvas says "Tide fits, weather out"; the app says "High tide fits, no medal".

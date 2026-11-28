@@ -92,7 +92,10 @@
   .day-row .when { min-width: 0; }
   .day-row .when b { display: block; font-size: .82rem; font-weight: 600; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.2; }
   .day-row .when .short { display: none; }
-  .day-row .ico { font-size: 1.05rem; text-align: center; line-height: 1; }
+  .day-row .ico { display: flex; justify-content: center; line-height: 1; }
+  .i { flex: none; vertical-align: -4px; } .i .s { stroke: var(--sun); } .i .c { stroke: #fff; } .i .t { stroke: var(--tide); } .i .r { stroke: var(--rain); }
+  .badge .i { width: 15px; height: 15px; vertical-align: -3px; margin-right: 2px; }
+  .loc-wrap .trophy { color: var(--gold); }
   .day-row .v { text-align: right; font-weight: 600; font-size: .85rem; font-variant-numeric: tabular-nums; white-space: nowrap; }
   .day-row .v.dim { color: var(--muted); font-weight: 500; }
   .day-row .v.big { color: #ffb8a3; }
@@ -180,7 +183,7 @@
   <div class="brand" aria-hidden="true">Weather Wahine</div>
   <h1 class="sr-only">Weather Wahine – West Auckland tides and sunny days</h1>
   <section class="hero" id="hero">
-    <div class="loc-wrap"><select id="loc" aria-label="Beach"></select></div>
+    <div class="loc-wrap"><svg class="i trophy" id="allIco" viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 4h10v5a5 5 0 0 1-10 0V4z"/><path d="M7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M12 14v3M8 20h8M9 17h6"/></svg><select id="loc" aria-label="Beach"></select></div>
     <div class="day-label" id="dayLabel">Today</div>
     <div class="temp" id="heroTemp">--°</div>
     <div class="cond" id="heroCond">Loading…</div>
@@ -191,34 +194,34 @@
   <div class="status" id="status"></div>
 
   <section class="card" id="tourCard" hidden>
-    <div class="card-h">🏆 Te whakataetae <span class="en">· Tournament</span><span class="right" id="tourCount"></span></div>
+    <div class="card-h">Te whakataetae <span class="en">· Tournament</span><span class="right" id="tourCount"></span></div>
     <div id="tour"></div>
   </section>
 
   <section class="card" id="medalCard" hidden>
-    <div class="card-h">★ Ngā rā pai <span class="en">· Medal days</span><span class="right" id="medalCount"></span></div>
+    <div class="card-h">Ngā rā pai <span class="en">· Medal days</span><span class="right" id="medalCount"></span></div>
     <div id="medals"></div>
   </section>
 
   <section class="card" id="bestCard">
-    <div class="card-h">★ Ngā rā pai <span class="en">· Best days</span><span class="right" id="bestCount"></span></div>
+    <div class="card-h">Ngā rā pai <span class="en">· Best days</span><span class="right" id="bestCount"></span></div>
     <div id="best"><div class="empty-note">Loading…</div></div>
   </section>
 
   <section class="card" id="tideCard">
-    <div class="card-h">🌊 Te tai <span class="en">· Tide</span><span class="right" id="tideDay"></span></div>
+    <div class="card-h">Te tai <span class="en">· Tide</span><span class="right" id="tideDay"></span></div>
     <svg class="tide-svg" id="tideSvg" viewBox="0 0 340 130" role="img" aria-label="Tide height through the day"></svg>
     <div class="tide-foot"><span id="tideHighs"></span><span id="tideWin"></span></div>
     <div class="notice" id="tideSrc"></div>
   </section>
 
   <section class="card" id="listCard">
-    <div class="card-h">🗓 Matapae huarere <span class="en">· 16-day forecast</span></div>
+    <div class="card-h">Matapae huarere <span class="en">· 16-day forecast</span></div>
     <div id="list"></div>
   </section>
 
   <details class="card" id="settings">
-    <summary><div class="card-h">⚙︎ Tautuhinga <span class="en">· Settings</span><span class="chev">›</span></div></summary>
+    <summary><div class="card-h">Tautuhinga <span class="en">· Settings</span><span class="chev">›</span></div></summary>
     <div class="set-row"><span>High tide from</span><input type="time" id="from" value="11:00"></div>
     <div class="set-row"><span>High tide until</span><input type="time" id="to" value="16:00"></div>
     <div class="set-row"><span>Minimum temp (°C)</span><input type="number" id="minTemp" value="22" step="1" inputmode="numeric"></div>
@@ -276,18 +279,34 @@ const MIN_SCORE = 2;       // a day needs at least this many points (of 9) to be
 const medalFor = (score) => (score == null || score < MIN_SCORE ? null : score >= 8 ? "platinum" : score >= 6 ? "gold" : score >= 4 ? "silver" : "bronze");
 const windowLabel = () => `${fmtTime(settings().from).replace(":00", "")}–${fmtTime(settings().to).replace(":00", "")}`;
 const WMO = {
-  0: ["Clear", "☀️", "clear"], 1: ["Mainly Clear", "🌤️", "clear"], 2: ["Partly Cloudy", "⛅️", "partly"],
-  3: ["Cloudy", "☁️", "overcast"], 45: ["Fog", "🌫️", "overcast"], 48: ["Fog", "🌫️", "overcast"],
-  51: ["Drizzle", "🌦️", "rain"], 53: ["Drizzle", "🌦️", "rain"], 55: ["Drizzle", "🌧️", "rain"],
-  56: ["Freezing Drizzle", "🌧️", "rain"], 57: ["Freezing Drizzle", "🌧️", "rain"],
-  61: ["Light Rain", "🌦️", "rain"], 63: ["Rain", "🌧️", "rain"], 65: ["Heavy Rain", "🌧️", "storm"],
-  66: ["Freezing Rain", "🌧️", "rain"], 67: ["Freezing Rain", "🌧️", "storm"],
-  71: ["Snow", "🌨️", "overcast"], 73: ["Snow", "🌨️", "overcast"], 75: ["Snow", "🌨️", "overcast"], 77: ["Snow", "🌨️", "overcast"],
-  80: ["Showers", "🌦️", "rain"], 81: ["Showers", "🌧️", "rain"], 82: ["Heavy Showers", "⛈️", "storm"],
-  85: ["Snow Showers", "🌨️", "overcast"], 86: ["Snow Showers", "🌨️", "overcast"],
-  95: ["Thunderstorms", "⛈️", "storm"], 96: ["Thunderstorms", "⛈️", "storm"], 99: ["Thunderstorms", "⛈️", "storm"],
+  0: ["Clear", "sun", "clear"], 1: ["Mainly Clear", "partly", "clear"], 2: ["Partly Cloudy", "partly", "partly"],
+  3: ["Cloudy", "cloud", "overcast"], 45: ["Fog", "fog", "overcast"], 48: ["Fog", "fog", "overcast"],
+  51: ["Drizzle", "rain", "rain"], 53: ["Drizzle", "rain", "rain"], 55: ["Drizzle", "rain", "rain"],
+  56: ["Freezing Drizzle", "rain", "rain"], 57: ["Freezing Drizzle", "rain", "rain"],
+  61: ["Light Rain", "rain", "rain"], 63: ["Rain", "rain", "rain"], 65: ["Heavy Rain", "rain", "storm"],
+  66: ["Freezing Rain", "rain", "rain"], 67: ["Freezing Rain", "rain", "storm"],
+  71: ["Snow", "snow", "overcast"], 73: ["Snow", "snow", "overcast"], 75: ["Snow", "snow", "overcast"], 77: ["Snow", "snow", "overcast"],
+  80: ["Showers", "rain", "rain"], 81: ["Showers", "rain", "rain"], 82: ["Heavy Showers", "storm", "storm"],
+  85: ["Snow Showers", "snow", "overcast"], 86: ["Snow Showers", "snow", "overcast"],
+  95: ["Thunderstorms", "storm", "storm"], 96: ["Thunderstorms", "storm", "storm"], 99: ["Thunderstorms", "storm", "storm"],
 };
-const wmo = (c) => WMO[c] || ["—", "🌡️", "overcast"];
+const wmo = (c) => WMO[c] || ["—", "cloud", "overcast"];
+// Line icons (24×24, stroked), matching the Design canvas. Colours come from .i .s/.c/.t/.r in the CSS.
+const CLOUD_HI = '<path class="c" d="M7 15h10a4 4 0 0 0 0-8 6 6 0 0 0-11.5 2A3 3 0 0 0 7 15z"/>';
+const ICON = {
+  sun: '<circle class="s" cx="12" cy="12" r="4"/><path class="s" d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  partly: '<circle class="s" cx="9" cy="9" r="3.5"/><path class="c" d="M8 19h9a3.5 3.5 0 0 0 0-7 5 5 0 0 0-9.6 1.5A2.8 2.8 0 0 0 8 19z"/>',
+  cloud: '<path class="c" d="M7 19h10a4 4 0 0 0 0-8 6 6 0 0 0-11.5 2A3 3 0 0 0 7 19z"/>',
+  fog: '<path class="c" d="M4 9h16M3 13h18M5 17h14"/>',
+  rain: CLOUD_HI + '<path class="r" d="M8 18l-1 3M12 18l-1 3M16 18l-1 3"/>',
+  snow: CLOUD_HI + '<path class="c" d="M8 19h.01M12 21h.01M16 19h.01"/>',
+  storm: CLOUD_HI + '<path class="s" d="M13 15l-3 4h4l-3 4"/>',
+  tide: '<path class="t" d="M2 10c2.5-2 4.5-2 7 0s4.5 2 7 0 4.5-2 6 0M2 15c2.5-2 4.5-2 7 0s4.5 2 7 0 4.5-2 6 0"/>',
+  drop: '<path class="r" d="M12 3s6 6.5 6 11a6 6 0 0 1-12 0c0-4.5 6-11 6-11z"/>',
+  warn: '<path d="M12 3l10 18H2L12 3zM12 10v5M12 18h.01"/>',
+};
+// label → role="img" with that name; no label → decorative (the text beside it says the same).
+const icon = (key, label) => `<svg class="i" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${label ? `role="img" aria-label="${label}"` : 'aria-hidden="true"'}>${ICON[key]}</svg>`;
 
 const $ = (id) => document.getElementById(id);
 const state = { data: null, key: null, days: [], sel: 0, cache: {}, beaches: [], medalDays: [], medalView: "all" };
@@ -475,9 +494,9 @@ function renderHero() {
   $("heroHL").textContent = d.hasWeather ? `H:${Math.round(d.tmax)}°  L:${Math.round(d.tmin ?? d.tmax)}°` : " ";
   const b = [];
   if (d.medal) b.push(`<span class="badge both">★ ${cap(d.medal)} day</span>`);
-  if (d.tide) b.push(`<span class="badge">🌊 High ${d.inWindow.map((t) => fmtTime(t.mins)).join(" & ")}</span>`);
-  if (d.winRain != null) b.push(`<span class="badge">💧 ${d.winRain}%</span>`);
-  if (d.wave != null) b.push(`<span class="badge${d.bigSwell ? " warn" : ""}">${d.bigSwell ? "⚠️ Big swell" : "Swell"} ${d.wave.toFixed(1)} m</span>`);
+  if (d.tide) b.push(`<span class="badge">${icon("tide")} High ${d.inWindow.map((t) => fmtTime(t.mins)).join(" & ")}</span>`);
+  if (d.winRain != null) b.push(`<span class="badge">${icon("drop")} ${d.winRain}%</span>`);
+  if (d.wave != null) b.push(`<span class="badge${d.bigSwell ? " warn" : ""}">${d.bigSwell ? `${icon("warn")} Big swell` : "Swell"} ${d.wave.toFixed(1)} m</span>`);
   if (d.uv != null && d.hasWeather) b.push(`<span class="badge">UV ${Math.round(d.uv)}</span>`);
   $("heroBadges").innerHTML = b.join("");
 }
@@ -514,7 +533,7 @@ function dayRow(d, i, opt) {
     : d.medal ? `<span class="medal ${d.medal}">${cap(d.medal)}</span>` : "";
   return `<div class="day-row${d.hasWeather ? "" : " skeleton"}${!opt && i === state.sel ? " sel" : ""}" data-i="${i}"${opt ? ` data-b="${opt.beach}"` : ""}>
       <span class="when"><b class="long">${long}</b><b class="short">${short}</b>${tag}</span>
-      <span class="ico"${d.hasWeather ? ` title="${wmo(d.winCode)[0]}"` : ""}>${d.hasWeather ? wmo(d.winCode)[1] : "–"}</span>
+      <span class="ico"${d.hasWeather ? ` title="${wmo(d.winCode)[0]}"` : ""}>${d.hasWeather ? icon(wmo(d.winCode)[1], wmo(d.winCode)[0]) : "–"}</span>
       ${v(d.tide ? fmtTime(d.inWindow[0].mins) : null)}${v(d.hasWeather ? `${Math.round(d.winTemp)}°` : null)}
       ${v(d.winRain != null ? `${d.winRain}%` : null)}${v(d.wave != null ? `${d.wave.toFixed(1)}m` : null, d.bigSwell ? " big" : "")}
     </div>`;
@@ -596,6 +615,7 @@ function renderAll() { renderHero(); renderBest(); renderTide(); renderList(); }
 /* ---------- All beaches (tournament) ---------- */
 function setMode(all) {
   for (const id of ["tourCard", "medalCard"]) $(id).hidden = !all;
+  $("allIco").style.display = all ? "" : "none";   // trophy beside the picker only on All beaches
   for (const id of ["bestCard", "tideCard", "listCard"]) $(id).hidden = all;
 }
 const longDate = (date, i) => (i === 0 ? `Today, ${fmtDate(date, { day: "numeric", month: "short" })}` : fmtDate(date, { weekday: "long", day: "numeric", month: "short" }));
@@ -613,9 +633,9 @@ function renderChampion() {
   $("heroTemp").textContent = `${Math.round(d.winTemp)}°`;
   $("heroCond").textContent = longDate(d.date, c.i);
   $("heroHL").innerHTML = `${names.slice(0, 2).join(" &amp; ")}${more > 0 ? ` <span class="win">+${more} more ${c.tier}</span>` : ""}`;
-  const b = [`<span class="badge both">★ ${cap(c.tier)} day</span>`, `<span class="badge">🌊 High ${fmtTime(d.inWindow[0].mins)}</span>`];
-  if (d.winRain != null) b.push(`<span class="badge">💧 ${d.winRain}%</span>`);
-  if (d.wave != null) b.push(`<span class="badge${d.bigSwell ? " warn" : ""}">${d.bigSwell ? "⚠️ Big swell" : "Swell"} ${d.wave.toFixed(1)} m</span>`);
+  const b = [`<span class="badge both">★ ${cap(c.tier)} day</span>`, `<span class="badge">${icon("tide")} High ${fmtTime(d.inWindow[0].mins)}</span>`];
+  if (d.winRain != null) b.push(`<span class="badge">${icon("drop")} ${d.winRain}%</span>`);
+  if (d.wave != null) b.push(`<span class="badge${d.bigSwell ? " warn" : ""}">${d.bigSwell ? `${icon("warn")} Big swell` : "Swell"} ${d.wave.toFixed(1)} m</span>`);
   $("heroBadges").innerHTML = b.join("");
 }
 
@@ -771,7 +791,7 @@ async function update(force) {
   }
 }
 
-$("loc").appendChild(new Option(`🏆 ${ALL}`, ALL));
+$("loc").appendChild(new Option(ALL, ALL));
 for (const group of [...new Set(LOCATIONS.map((l) => l.group))]) {
   const og = document.createElement("optgroup"); og.label = group;
   LOCATIONS.filter((l) => l.group === group).forEach((l) => og.appendChild(new Option(l.name, l.name)));

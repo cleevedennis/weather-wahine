@@ -18,6 +18,8 @@
   the medal scheme the app used that day (`medalScheme`: `bands` or `rank`).
 
 ### Changed
+- **Line icons replace emoji** across the page: weather in the day rows, tide, rain and big-swell chips, and a
+  gold trophy beside the picker on All beaches. Card headings lose their emoji, as on the Design canvas.
 - **Medals are now score bands**, the same on every screen: platinum 8–9 points, gold 6–7, silver 4–5, bronze 2–3.
   Best days still shows the top 4, but two days can share a medal, and every medal day is tagged in the 16-day list.
 - The app no longer remembers the last beach; it always opens on All beaches.

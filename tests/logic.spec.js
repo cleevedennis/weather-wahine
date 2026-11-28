@@ -96,7 +96,8 @@ test('big swell (≥ 2.5 m) is flagged everywhere; small swell is not', async ({
   await expect(page.locator('#heroBadges')).toContainText('Swell 1.1 m');
   await expect(page.locator('#list .v.big')).toHaveText(['3.2m']);
   await page.click('#list .day-row[data-i="2"]');
-  await expect(page.locator('#heroBadges')).toContainText('⚠️ Big swell 3.2 m');
+  await expect(page.locator('#heroBadges')).toContainText('Big swell 3.2 m');
+  await expect(page.locator('#heroBadges .badge.warn svg.i')).toHaveCount(1);   // line warning icon, not emoji
 });
 
 test('wording: no "Beach day", no swim-safety notice, no calendar card', async ({ page }) => {
