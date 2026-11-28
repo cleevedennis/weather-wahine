@@ -21,14 +21,15 @@ Two things keep the gate deterministic:
 - **Service workers blocked** by default, so mocked network calls can't be bypassed. `tests/pwa.spec.js` enables them
   and mocks at the browser-context level instead, which also catches the worker's own requests.
 
-## What the gate covers (31 tests)
+## What the gate covers (33 tests)
 
 **Logic** (`tests/logic.spec.js`)
 - High-tide times within 3 minutes on a known curve, including a tide just before midnight
 - Window edges: 11:00 and 4:00pm count; 4:06pm and 10:54am don't
 - Daily fallback: exactly 22° and 39% rain count; 21.9°, overcast and 40% rain don't
-- Best days: top 4 by score, best first, tagged Platinum/Gold/Silver/Bronze ("Top 4 of N", rainy day out); fewer
-  than 4 shows just those
+- Best days: top 4 by score, best first, each tagged with its score band ("Top 4 of N", rainy day out); every ranked
+  day tagged in the list; fewer than 4 shows just those
+- Medal bands: platinum 8–9, gold 6–7, silver 4–5, bronze 2–3, under 2 none
 - Medal scoring: known inputs give the expected points; rain or too-cold days are out
 - Hourly window: early drizzle with a clear window → sunny; drizzle at 1pm → not; warm only at 5pm → not
 - Settings: re-filtering, reversed window swapped, empty values fall back, no "NaN"
@@ -52,12 +53,16 @@ Two things keep the gate deterministic:
 - An offline copy three days old drops the past days and starts at the real today
 
 **UI** (`tests/ui.spec.js`)
-- All beaches load distinct coordinates; beach persists by name; old index-based saves fall back to Piha
+- Opens on All beaches: one weather request for all 8 beaches and one marine request for the 5 coast beaches;
+  picking each beach then needs no request; a reload returns to All beaches
+- All beaches: tournament grid rows, one dot per medal, rings on a rained-out day; medal days each listed once under
+  their best medal; champion in the top section; tapping a dot opens that beach on that day; Medal days shows every
+  beach-day by default and one row per day under "Best per day"
 - Tapping Best days and list rows selects them
 - Resumed page re-fetches when data is over an hour old
 - Tide / weather service down → friendly error
 - Missing forecast days and tide gaps render without errors
-- No sideways scroll or clipped content on iPhone SE, Pixel 7, 320px and desktop
+- No sideways scroll or clipped content on iPhone SE, Pixel 7, 320px and desktop (All beaches and a beach)
 - No axe-core accessibility violations; all tappable days keyboard-focusable
 - Calendar export: valid wrapper, `VTIMEZONE`, lines ≤ 75 bytes, unique UIDs, one event per medal day — saved for the external validator
 

@@ -55,7 +55,7 @@ test('settings re-filter days; reversed or empty settings are handled', async ({
   await expect(page.locator('#best')).not.toContainText('NaN');
 });
 
-test('best days ranks the top 4 by score, best first, as platinum/gold/silver/bronze', async ({ page }) => {
+test('best days lists the top 4 by score, best first, each tagged with its score band', async ({ page }) => {
   // Day 1 is rainy (out); days 3 and 6 are cloudy and cool, so they score lower than the rest.
   await openPage(page, { marine: marineSine(16), weather: weatherDaily(16, (i) => (i === 1 ? { rain: 70 } : i === 3 || i === 6 ? { code: 3, tmax: 18 } : {})) });
   const ranked = await page.evaluate(() => state.days.map((d, i) => ({ i, s: d.score })).filter((x) => x.s != null && x.s >= MIN_SCORE)
@@ -64,15 +64,22 @@ test('best days ranks the top 4 by score, best first, as platinum/gold/silver/br
   const shown = await page.locator('#best .day-row').evaluateAll((els) => els.map((e) => +e.dataset.i));
   expect(shown).toEqual(ranked.slice(0, 4));
   expect(shown).not.toContain(1);
-  await expect(page.locator('#best .medal')).toHaveText(['Platinum', 'Gold', 'Silver', 'Bronze']);
+  const bands = await page.evaluate((ix) => ix.map((i) => medalFor(state.days[i].score)), ranked.slice(0, 4));
+  await expect(page.locator('#best .medal')).toHaveText(bands.map((m) => m[0].toUpperCase() + m.slice(1)));
   await expect(page.locator('#bestCount')).toHaveText(`Top 4 of ${ranked.length}`);
-  await expect(page.locator('#list .medal')).toHaveCount(4);
+  await expect(page.locator('#list .medal')).toHaveCount(ranked.length);   // every ranked day carries its medal
 });
 
 test('medal scoring: sky, warmth, rain, tide timing; rain or cold days are out', async ({ page }) => {
   const w = weatherDaily(7, (i) => [{}, { code: 2 }, { code: 3 }, { tmax: 19 }, { rain: 30 }, { code: 61 }, { tmax: 15 }][i]);
   await openPage(page, { weather: w, marine: marinePeaks(7, [0, 1, 2, 3, 4, 5, 6].map((d) => d * 24 + 13.5)) });
   expect(await page.evaluate(() => state.days.map((d) => d.score))).toEqual([8, 7, 6, 7, 7, null, null]);
+});
+
+test('medal bands: platinum 8–9, gold 6–7, silver 4–5, bronze 2–3, under 2 none', async ({ page }) => {
+  await openPage(page);
+  expect(await page.evaluate(() => [null, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9].map(medalFor)))
+    .toEqual([null, null, null, 'bronze', 'bronze', 'silver', 'silver', 'gold', 'gold', 'platinum', 'platinum']);
 });
 
 test('best days with fewer than 4 ranked days shows just those', async ({ page }) => {

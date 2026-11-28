@@ -3,11 +3,21 @@
 ## Unreleased
 
 ### Added
+- **All beaches view, the new opening screen.** The top section shows the champion day across every beach; a
+  **Tournament** grid shows each beach's medals over 16 days (tap a dot to open that beach on that day); and
+  **Medal days** replaces the 16-day list, grouped by medal, with a switch between **All** (every beach that earns a
+  medal, day by day; the default) and **Best per day** (each day once, under its best beach).
+  All beaches load in two requests, and picking a beach afterwards needs no new request.
 - **Daily forecast capture** (`.github/workflows/capture.yml`, `tools/capture_forecasts.mjs`): each morning at about
   6:47am NZDT, saves the exact Open-Meteo responses the app fetches for every beach to the `forecast-captures`
-  branch, so medal days can later be checked against what happened. No change to the site.
+  branch, so medal days can later be checked against what happened. No change to the site. Each record also notes
+  the medal scheme the app used that day (`medalScheme`: `bands` or `rank`).
 
 ### Changed
+- **Medals are now score bands**, the same on every screen: platinum 8–9 points, gold 6–7, silver 4–5, bronze 2–3.
+  Best days still shows the top 4, but two days can share a medal, and every medal day is tagged in the 16-day list.
+- The app no longer remembers the last beach; it always opens on All beaches.
+- On All beaches, **Add to calendar** exports each medal day at its top beach.
 - **Add to calendar** now exports the 4 medal days (e.g. "★ Gold · High tide 1:12pm · 22°C · 5% rain · 1.1 m swell"),
   matching Best days; sunny-only all-day events are gone.
 - **Best days are now ranked** platinum, gold, silver and bronze — the 4 best days in the forecast, best first. Each

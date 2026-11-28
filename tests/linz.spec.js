@@ -46,6 +46,10 @@ test('LINZ offsets: times = Onehunga + offset, full coverage, harbour beach gets
   const d = await days(page);
   expect(d[0].highs).toEqual([8 * 60 + 29, 20 * 60 + 46]);       // Onehunga 10:09 & 22:26 − 1h40m
   expect(d.every((x) => x.hasTide)).toBe(true);
+  // Refetch Piha on its own (the All beaches request also covers beaches still on the model).
+  requests.length = 0;
+  await page.click('#settings summary'); await page.click('#refresh');
+  await expect.poll(() => requests.length).toBe(2);
   expect(requests.filter((u) => u.includes('sea_level_height_msl'))).toHaveLength(0);
   await expect(page.locator('#tideSrc')).toContainText('Official LINZ prediction (Onehunga −1h 40m)');
   await page.selectOption('#loc', 'Huia Domain');
