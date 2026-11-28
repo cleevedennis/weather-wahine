@@ -14,6 +14,11 @@ Concurrency: CI cancels superseded runs on the same ref; deploys never cancel ea
 Permissions: workflows default to `contents: read`; the deploy job adds `pages: write` and `id-token: write` (and repeats
 `contents: read`, because job-level permissions replace the defaults).
 
+## Small changes
+
+Use the `/tweak` skill (`.claude/skills/tweak/SKILL.md`) in a Claude Code session, or edit on github.com via a new
+branch + pull request. Either way the change goes through the gate, Auto-merge and the deploy below.
+
 ## Merge policy
 
 **Every pull request is merged as soon as CI passes on its latest commit.** This is enforced by
