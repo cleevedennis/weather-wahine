@@ -2,6 +2,9 @@
 
 ## Unreleased
 
+### Changed
+- Default high-tide window is now 11am–4pm (was 11am–3pm) and default minimum temperature is 22°C (was 20°C).
+
 ### Tooling
 - `/tweak` Claude Code skill for shipping batches of small changes (`.claude/skills/tweak/SKILL.md`).
 

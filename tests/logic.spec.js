@@ -19,13 +19,13 @@ test('high-tide times are accurate on a known curve, including near midnight', a
   expect(r[1].mins).toBeGreaterThan(1420);
 });
 
-test('tide window edges: 11:00 and 3:00pm count, 3:06pm and 10:54am do not', async ({ page }) => {
-  await openPage(page, { marine: marinePeaks(4, [11, 24 + 15, 48 + 15.1, 72 + 10.9]), weather: weatherDaily(4) });
+test('tide window edges: 11:00 and 4:00pm count, 4:06pm and 10:54am do not', async ({ page }) => {
+  await openPage(page, { marine: marinePeaks(4, [11, 24 + 16, 48 + 16.1, 72 + 10.9]), weather: weatherDaily(4) });
   expect((await days(page)).map((d) => d.tide)).toEqual([true, true, false, false]);
 });
 
-test('daily fallback rules: 20° counts, 19.9° / overcast / 31% rain do not', async ({ page }) => {
-  const w = weatherDaily(5, (i) => [{ tmax: 20, rain: 30 }, { tmax: 19.9 }, { code: 3 }, { code: 2, rain: 31 }, { code: 1, rain: null }][i]);
+test('daily fallback rules: 22° counts, 21.9° / overcast / 31% rain do not', async ({ page }) => {
+  const w = weatherDaily(5, (i) => [{ tmax: 22, rain: 30 }, { tmax: 21.9 }, { code: 3 }, { code: 2, rain: 31 }, { code: 1, rain: null }][i]);
   await openPage(page, { weather: w, marine: marineSine(5) });
   expect((await days(page)).map((d) => d.sunny)).toEqual([true, false, false, false, true]);
 });
@@ -51,7 +51,7 @@ test('settings re-filter days; reversed or empty settings are handled', async ({
   await page.fill('#from', '17:00'); await page.fill('#to', '11:00'); await page.dispatchEvent('#to', 'change');
   expect((await days(page)).map((d) => d.tide)).toEqual([true, true, true]);  // swapped to 11:00–17:00
   await page.fill('#minTemp', ''); await page.dispatchEvent('#minTemp', 'change');
-  expect((await days(page)).every((d) => d.sunny)).toBe(true);                 // falls back to 20°
+  expect((await days(page)).every((d) => d.sunny)).toBe(true);                 // falls back to 22°
   await expect(page.locator('#best')).not.toContainText('NaN');
 });
 

@@ -211,8 +211,8 @@
   <details class="card" id="settings">
     <summary><div class="card-h">⚙︎ Tautuhinga <span class="en">· Settings</span><span class="chev">›</span></div></summary>
     <div class="set-row"><span>High tide from</span><input type="time" id="from" value="11:00"></div>
-    <div class="set-row"><span>High tide until</span><input type="time" id="to" value="15:00"></div>
-    <div class="set-row"><span>Minimum temp (°C)</span><input type="number" id="minTemp" value="20" step="1" inputmode="numeric"></div>
+    <div class="set-row"><span>High tide until</span><input type="time" id="to" value="16:00"></div>
+    <div class="set-row"><span>Minimum temp (°C)</span><input type="number" id="minTemp" value="22" step="1" inputmode="numeric"></div>
     <div class="set-row"><span>Max rain chance (%)</span><input type="number" id="maxRain" value="30" step="5" min="0" max="100" inputmode="numeric"></div>
     <div class="btns">
       <button class="btn" id="refresh">↻ Refresh</button>
@@ -296,9 +296,9 @@ function loadPrefs() {
 function settings() {
   const t = (id, def) => (/^\d{1,2}:\d{2}$/.test($(id).value) ? toMin($(id).value) : toMin(def));
   const n = (id, def) => { const v = parseFloat($(id).value); return Number.isFinite(v) ? v : def; };
-  let from = t("from", "11:00"), to = t("to", "15:00");
+  let from = t("from", "11:00"), to = t("to", "16:00");
   if (from > to) [from, to] = [to, from];
-  return { from, to, minTemp: n("minTemp", 20), maxRain: n("maxRain", 30) };
+  return { from, to, minTemp: n("minTemp", 22), maxRain: n("maxRain", 30) };
 }
 const toMin = (hhmm) => { const [h, m] = String(hhmm).split(":").map(Number); return h * 60 + (m || 0); };
 const fmtTime = (mins) => {
@@ -385,7 +385,7 @@ function analyse(data) {
   const stepMins = ht.length > 1 ? naive(ht[1]) - naive(ht[0]) : 60;
   const stepsPerDay = 1440 / stepMins;
   const d = weather.daily, wh = weather.hourly, mh = data.marine?.hourly;
-  // Hours that overlap the window, e.g. 11:00–15:00 → the 11am…3pm hours.
+  // Hours that overlap the window, e.g. 11:00–16:00 → the 11am…4pm hours.
   const inWin = (iso) => { const m = toMin(iso.slice(11)); return m + 59 >= from && m <= to; };
   const pick = (h, key, date) => (h?.[key] ? h.time.map((t, j) => (t.startsWith(date) && inWin(t) ? h[key][j] : null)).filter((v) => v != null) : []);
   const max = (a) => (a.length ? Math.max(...a) : null);
