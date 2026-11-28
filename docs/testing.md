@@ -53,18 +53,15 @@ Two things keep the gate deterministic:
 - An offline copy three days old drops the past days and starts at the real today
 
 **UI** (`tests/ui.spec.js`)
-- Opens on All beaches: one weather request for all 8 beaches and one marine request for the 5 coast beaches;
-  picking each beach then needs no request; a reload returns to All beaches
-- All beaches: tournament grid rows, one dot per medal, rings on a rained-out day; medal days each listed once under
-  their best medal; champion in the top section; tapping a dot opens that beach on that day; Medal days shows every
-  beach-day by default and one row per day under "Best per day"
+- Opens on Piha with one request for that beach; no All beaches option, Tournament or Medal days card; the picked
+  beach is remembered across a reload; an old saved "All beaches" choice falls back to Piha
 - Tapping Best days and list rows selects them
 - Resumed page re-fetches when data is over an hour old
 - Tide / weather service down → friendly error
 - Missing forecast days and tide gaps render without errors
-- No sideways scroll or clipped content on iPhone SE, Pixel 7, 320px and desktop (All beaches and a beach)
+- No sideways scroll or clipped content on iPhone SE, Pixel 7, 320px and desktop (a coast beach and a harbour beach)
 - No axe-core accessibility violations; all tappable days keyboard-focusable
-- Calendar export: valid wrapper, `VTIMEZONE`, lines ≤ 75 bytes, unique UIDs, one event per medal day — saved for the external validator
+- Calendar export: valid wrapper, `VTIMEZONE`, lines ≤ 75 bytes, unique UIDs, one event per Best day — saved for the external validator
 
 ## Mock helpers (`tests/helpers.js`)
 

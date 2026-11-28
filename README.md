@@ -4,8 +4,6 @@ A single-page calendar for West Auckland's West Coast beaches that shows, for th
 
 - 🌊 **High tides inside your window** (default 11am–4pm)
 - ☀️ **Sunny, warm weather during that window** (default 22°C+, sunny or partly cloudy, rain chance under 40%)
-- 🏆 **All beaches at a glance** (the opening screen): a tournament grid of every beach's medal days and a list of
-  the best days by medal
 - ★ **Medals** platinum, gold, silver and bronze by score
 - ⚠️ **Big swell warnings** (2.5 m+ waves)
 

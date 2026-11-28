@@ -2,6 +2,12 @@
 
 ## Unreleased
 
+### Removed
+- **All beaches view removed** after user feedback that its long lists were too much: no Champion day, Tournament
+  grid or Medal days card, and no "All beaches" option in the picker. Medal scoring is unchanged (score bands:
+  platinum 8–9, gold 6–7, silver 4–5, bronze 2–3) and still drives Best days, the 16-day list and Add to calendar.
+  The app again opens on the last beach you picked (Piha the first time) and fetches one beach at a time.
+
 ### Added
 - **Canvas → PR workflow (no change to the site).** `/canvas-ship` turns edits on the Design canvas into small PRs
   through the `/tweak` pipeline, with a phone-size screenshot tool (`tools/canvas/`); `/decision-modal` puts every

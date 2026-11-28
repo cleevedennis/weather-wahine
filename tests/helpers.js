@@ -42,14 +42,14 @@ function weatherHourly(days, daily, hour) {
  * Open the page with mocked APIs. Any other non-local request is blocked so the gate never
  * depends on the network. `linz` optionally injects LINZ offsets into named beaches.
  */
-/** Answer like Open-Meteo: a list of coordinates (All beaches) gets one copy of the mock per beach. */
+/** Answer like Open-Meteo: a list of coordinates gets one copy of the mock per beach. */
 const perCoord = (url, json) => {
   const n = (new URL(url).searchParams.get('latitude') || '').split(',').length;
   return n > 1 ? Array.from({ length: n }, () => json) : json;
 };
 
 /**
- * `beach` (default Piha) is picked after the app opens on All beaches; pass `beach: null` to stay on All beaches.
+ * `beach` (default Piha) is picked after the app opens; pass `beach: null` to keep the beach it opens on.
  */
 async function openPage(page, { marine = marineSine(), weather = weatherDaily(), marineStatus = 200, weatherStatus = 200, linz, beach = 'Piha' } = {}) {
   const errors = [], requests = [];

@@ -54,23 +54,12 @@ Every list of days uses one row layout (`dayRow()` in `index.html`), so the page
 | Warnings | Swell 2.5 m+ turns the value coral (`#ffb8a3`); no extra warning lines |
 | Selected day | Day text underlined |
 
-New lists of days should reuse this row rather than adding a new layout. In **Medal days** (All beaches) the
-medal tag's line shows the top beach instead ("Piha +4 more"), because the medal is the group heading.
+New lists of days should reuse this row rather than adding a new layout.
 
 ## Medals
 
 Medals are score bands (out of 9), the same on every screen: **platinum 8–9, gold 6–7, silver 4–5, bronze 2–3**.
 A day can share a medal with other days (two golds, no platinum).
-
-## All beaches (default view)
-
-| Part | Detail |
-|---|---|
-| Picker | "All beaches" first, with a gold line trophy beside it; the app always opens on it (the beach isn't remembered) |
-| Top section | Champion day: the highest-scoring beach-day (ties → earlier date), its beaches ("Karekare & Piha +4 more platinum") and badges |
-| Tournament card | Grid: beaches (grouped Manukau Harbour / West Coast) × days. Filled dot in the medal colour; hollow ring = high tide fits, no medal; faint speck = no high tide in window. Weekend dates in bone. Tap a dot → that beach on that day |
-| ★ Medal days card | Replaces the 16-day list, grouped by medal, by date within a medal. A switch (pill toggle) picks **All** (default: one row per beach-day with a medal, beach named under the date) or **Best per day** (each day once under its best medal; stats are the top beach's, "+N more"). Days with no medal anywhere are left out |
-| Hidden | Best days, Tide and 16-day forecast cards (they return when a beach is picked) |
 
 ## Māori motifs
 
@@ -88,8 +77,7 @@ Chosen as general, widely shared motifs. Sacred or personal forms (e.g. tā moko
 
 | Heading | Meaning | Note |
 |---|---|---|
-| Ngā rā pai · Best days / Medal days | the good days | |
-| Te whakataetae · Tournament | the competition | All beaches grid |
+| Ngā rā pai · Best days | the good days | |
 | Te tai · Tide | the tide / sea | |
 | Matapae huarere · 16-day forecast | weather forecast | |
 | Tautuhinga · Settings | settings | |
@@ -114,11 +102,12 @@ reo part is shown.
 ## Design canvas
 
 The visual spec lives on a Design canvas: https://claude.ai/artifact/2gEM26bXS872U5tdesbnKo (artboard
-`project/Main.dc.html`, the All beaches view at 390 px; private to the owner). Edits made there reach the app through
+`project/Main.dc.html` at 390 px; private to the owner). Edits made there reach the app through
 the `/canvas-ship` skill (`.claude/skills/canvas-ship/`), which translates each change into a small PR; the canvas's
 sample data and markup are never copied into the app.
 
 **Canvas baseline:** version `1795864245-6a8c` (synced to the live app 2026-11-28; the Medal days switch works in
 Play). The canvas uses the same icons and wording as the app. Its scores and stats are sample data.
 
-Known differences (the app is right; don't flag these in a diff): none.
+Known differences (the app is right; don't flag these in a diff): the canvas still shows the All beaches view
+(champion day, Tournament grid, Medal days), which the app removed on 2026-11-28. Don't ship it back.
