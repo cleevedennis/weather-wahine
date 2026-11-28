@@ -11,6 +11,8 @@ const LOCATIONS = Function(`"use strict"; return ${locSrc}`)();
 const TZ = html.match(/const TZ = "([^"]+)"/)[1];
 const DAYS = Number(html.match(/const DAYS = (\d+)/)[1]);
 const usesLinz = (l) => l.linz?.hw != null;   // the bundled LINZ table is always present in the app
+// Which medal scheme the app had at capture time, so before/after data is never mixed (verification plan, amendment 2).
+const MEDAL_SCHEME = /const medalFor\b/.test(html) ? "bands" : "rank";
 
 // Same URLs as fetchData() in index.html.
 function urls(loc) {
@@ -40,7 +42,7 @@ const day = new Intl.DateTimeFormat("en-CA", { timeZone: TZ }).format(new Date()
 fs.mkdirSync(path.join(out, day), { recursive: true });
 let failed = 0;
 for (const loc of LOCATIONS) {
-  const u = urls(loc), rec = { beach: loc.name, capturedAt, appCommit: process.env.GITHUB_SHA || null, urls: u };
+  const u = urls(loc), rec = { beach: loc.name, capturedAt, appCommit: process.env.GITHUB_SHA || null, medalScheme: MEDAL_SCHEME, urls: u };
   rec.weather = await get(u.weather);
   rec.marine = u.marine ? await get(u.marine) : null;
   if (rec.weather.status !== 200 || (rec.marine && rec.marine.status !== 200)) failed++;

@@ -8,9 +8,12 @@ The app always opens on **🏆 All beaches**, comparing every beach over the nex
 - **🏆 Te whakataetae · Tournament:** a grid of beaches × days. A filled dot is a medal (platinum, gold, silver,
   bronze); a hollow ring means the high tide fits but the weather earns no medal; a faint speck means no high tide in
   your window. Tap a dot to open that beach on that day.
-- **★ Ngā rā pai · Medal days:** every day that earns a medal at any beach, grouped under its best medal and listed by
-  date. The tide, temp, rain and swell shown are for the top beach, named under the date ("Piha +4 more" means four
-  other beaches share that medal). Tap a row to open that beach.
+- **★ Ngā rā pai · Medal days:** grouped by medal and listed by date. Two views:
+  - **All** (default): every beach that earns a medal, one row per beach and day, with the beach under the date.
+  - **Best per day:** each day once, under its best medal at any beach. The stats are for the top beach ("Piha +4
+    more" means four other beaches share that medal).
+
+  Tap a row to open that beach on that day.
 
 ## Choosing a beach
 

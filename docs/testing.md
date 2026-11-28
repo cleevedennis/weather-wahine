@@ -56,7 +56,8 @@ Two things keep the gate deterministic:
 - Opens on All beaches: one weather request for all 8 beaches and one marine request for the 5 coast beaches;
   picking each beach then needs no request; a reload returns to All beaches
 - All beaches: tournament grid rows, one dot per medal, rings on a rained-out day; medal days each listed once under
-  their best medal; champion in the top section; tapping a dot opens that beach on that day
+  their best medal; champion in the top section; tapping a dot opens that beach on that day; Medal days shows every
+  beach-day by default and one row per day under "Best per day"
 - Tapping Best days and list rows selects them
 - Resumed page re-fetches when data is over an hour old
 - Tide / weather service down → friendly error

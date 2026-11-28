@@ -35,15 +35,22 @@ test('All beaches: tournament grid, medal days grouped by best medal, tap opens 
   expect(new Set(md.map((x) => x.i)).size).toBe(md.length);    // each day once
   const tiers = ['platinum', 'gold', 'silver', 'bronze'].filter((t) => md.some((x) => x.tier === t));
   await expect(page.locator('#medals .tier-h .medal')).toHaveText(tiers.map((t) => t[0].toUpperCase() + t.slice(1)));
+  // Default "All": one row per beach-day with a medal
+  const medals = await page.evaluate(() => state.beaches.reduce((s, b) => s + b.days.filter((d) => d.medal).length, 0));
+  await expect(page.locator('#medals [data-view="all"]')).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('#medals .day-row')).toHaveCount(medals);
+  await expect(page.locator('#medalCount')).toHaveText(`${medals} medals`);
+  await expect(page.locator('#medals .day-row .beach').first()).toHaveText(/^\S[^+]*$/);   // a beach name, no "+N more"
+  // "Best per day": each day once, top beach plus the others sharing its medal
+  await page.click('#medals [data-view="best"]');
   await expect(page.locator('#medals .day-row')).toHaveCount(md.length);
   await expect(page.locator('#medalCount')).toHaveText(`${md.length} days`);
   // Harbour beaches have no tides in the gate (no LINZ offsets), so the 5 coast beaches share each medal.
   expect(md.every((x) => x.n === 5)).toBe(true);
-  await expect(page.locator('#medals .day-row .beach').first()).toHaveText(`${md[0].beach} +4 more`);
+  await expect(page.locator('#medals .day-row .beach')).toContainText([`${md[0].beach} +4 more`]);
   await expect(page.locator('#heroCond')).toHaveText(md[0].i === 0 ? /^Today/ : /\w+day/);
   await expect(page.locator('#heroBadges')).toContainText(`★ ${tiers[0][0].toUpperCase() + tiers[0].slice(1)} day`);
   // Dots: one per beach-day with a medal; rainy day 1 shows rings on the coast
-  const medals = await page.evaluate(() => state.beaches.reduce((s, b) => s + b.days.filter((d) => d.medal).length, 0));
   await expect(page.locator('#tour .cell:not(.out)')).toHaveCount(medals);
   await expect(page.locator('#tour .cell.out[data-i="1"]')).toHaveCount(5);
   await page.click('#tour .cell[data-b="Muriwai"][data-i="3"]');

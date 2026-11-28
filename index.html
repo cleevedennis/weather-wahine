@@ -103,6 +103,10 @@
   .empty-note { color: var(--muted); font-size: .9rem; padding: 6px 0 2px; }
   .day-row .beach { display: block; margin-top: 3px; font-size: .7rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
   .day-row .beach b { display: inline; color: #fff; font-size: inherit; }
+  .seg { display: inline-flex; background: rgba(0,0,0,.18); border-radius: 999px; padding: 2px; margin: 8px 0 2px; }
+  .seg button { font: inherit; font-size: .75rem; font-weight: 600; color: var(--muted); background: transparent; border: 0;
+    border-radius: 999px; padding: 6px 14px; min-height: 32px; cursor: pointer; }
+  .seg button[aria-pressed="true"] { background: rgba(243,234,216,.22); color: #fff; }
   .tier-h { display: flex; align-items: center; gap: 8px; padding: 10px 0 4px; }
   .tier-h .medal { margin-top: 0; }
   .tier-h .rule { flex: 1; height: 0.5px; background: var(--line); }
@@ -286,7 +290,7 @@ const WMO = {
 const wmo = (c) => WMO[c] || ["—", "🌡️", "overcast"];
 
 const $ = (id) => document.getElementById(id);
-const state = { data: null, key: null, days: [], sel: 0, cache: {}, beaches: [], medalDays: [] };
+const state = { data: null, key: null, days: [], sel: 0, cache: {}, beaches: [], medalDays: [], medalView: "all" };
 const isAll = () => $("loc").value === ALL;
 const FRESH_MS = 3600e3;   // reuse a fetched forecast for up to an hour
 
@@ -641,18 +645,31 @@ function renderTournament() {
   $("tourCount").textContent = `${n} medal${n === 1 ? "" : "s"}`;
 }
 
+// Two views: "all" = every beach-day with a medal (one row per beach); "best" = each day once, under its best beach.
 function renderMedalDays() {
-  const md = state.medalDays;
-  $("medalCount").textContent = md.length ? `${md.length} day${md.length === 1 ? "" : "s"}` : "";
-  if (!md.length) { $("medals").innerHTML = `<div class="empty-note">No medal days at any beach in the next ${state.beaches[0].days.length} days.</div>`; return; }
-  const intro = `<div class="best-rules">Each day sits under its best medal at any beach, on high tide ${windowLabel()}. Stats are for the top beach.</div>`;
-  // Within a medal, by date: the medal already says how good the day is.
-  const tiers = MEDALS.map((m) => ({ m, days: md.filter((x) => x.tier === m).sort((a, b) => a.i - b.i) })).filter((t) => t.days.length);
-  $("medals").innerHTML = intro + DAY_HEAD + tiers.map(({ m, days }) =>
-    `<div class="tier-h"><span class="medal ${m}">${cap(m)}</span><span class="rule"></span><span class="n">${days.length} day${days.length === 1 ? "" : "s"}</span></div>`
-    + days.map((x) => dayRow(x.best.d, x.i, { beach: x.best.loc.name, more: x.beaches.length - 1 })).join("")).join("")
+  const md = state.medalDays, all = state.medalView === "all";
+  const plural = (n, w) => `${n} ${w}${n === 1 ? "" : "s"}`;
+  if (!md.length) { $("medalCount").textContent = ""; $("medals").innerHTML = `<div class="empty-note">No medal days at any beach in the next ${state.beaches[0].days.length} days.</div>`; return; }
+  // Rows: { i, tier, d, beach, more }. Within a medal, by date (the medal already says how good the day is).
+  const rows = all
+    ? state.beaches.flatMap((b, k) => b.days.map((d, i) => ({ i, k, tier: d.medal, d, beach: b.loc.name, more: 0 })).filter((x) => x.tier))
+      .sort((a, b) => a.i - b.i || b.d.score - a.d.score || a.k - b.k)
+    : md.map((x) => ({ i: x.i, tier: x.tier, d: x.best.d, beach: x.best.loc.name, more: x.beaches.length - 1 })).sort((a, b) => a.i - b.i);
+  const unit = all ? "medal" : "day";
+  $("medalCount").textContent = plural(rows.length, unit);
+  const seg = `<div class="seg" role="group" aria-label="Medal days view">${[["all", "All"], ["best", "Best per day"]]
+    .map(([v, t]) => `<button type="button" data-view="${v}" aria-pressed="${state.medalView === v}">${t}</button>`).join("")}</div>`;
+  const intro = `<div class="best-rules">${all ? "Every beach that earns a medal, day by day" : "Each day once, under its best medal at any beach; stats are for the top beach"}, on high tide ${windowLabel()}.</div>`;
+  const tiers = MEDALS.map((m) => ({ m, rows: rows.filter((x) => x.tier === m) })).filter((t) => t.rows.length);
+  $("medals").innerHTML = seg + intro + DAY_HEAD + tiers.map(({ m, rows }) =>
+    `<div class="tier-h"><span class="medal ${m}">${cap(m)}</span><span class="rule"></span><span class="n">${plural(rows.length, unit)}</span></div>`
+    + rows.map((x) => dayRow(x.d, x.i, { beach: x.beach, more: x.more })).join("")).join("")
     + `<div class="notice">Days with no medal at any beach are left out. Pick a beach for its full forecast.</div>`;
 }
+document.addEventListener("click", (e) => {
+  const b = e.target.closest("[data-view]");
+  if (b && state.medalView !== b.dataset.view) { state.medalView = b.dataset.view; renderMedalDays(); }
+});
 function renderAllBeaches() { renderChampion(); renderTournament(); renderMedalDays(); }
 
 function select(i) {

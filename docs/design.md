@@ -69,7 +69,7 @@ A day can share a medal with other days (two golds, no platinum).
 | Picker | "🏆 All beaches" first; the app always opens on it (the beach isn't remembered) |
 | Top section | Champion day: the highest-scoring beach-day (ties → earlier date), its beaches ("Karekare & Piha +4 more platinum") and badges |
 | 🏆 Tournament card | Grid: beaches (grouped Manukau Harbour / West Coast) × days. Filled dot in the medal colour; hollow ring = high tide fits, no medal; faint speck = no high tide in window. Weekend dates in bone. Tap a dot → that beach on that day |
-| ★ Medal days card | Replaces the 16-day list: each day once, under its best medal at any beach, by date within a medal; stats are the top beach's. Days with no medal anywhere are left out |
+| ★ Medal days card | Replaces the 16-day list, grouped by medal, by date within a medal. A switch (pill toggle) picks **All** (default: one row per beach-day with a medal, beach named under the date) or **Best per day** (each day once under its best medal; stats are the top beach's, "+N more"). Days with no medal anywhere are left out |
 | Hidden | Best days, Tide and 16-day forecast cards (they return when a beach is picked) |
 
 ## Māori motifs
