@@ -1,0 +1,10 @@
+# Parity, bands (live app, main 10cebbb = PR #19), 28 Nov 2026
+400 cases, 6400 days, 438 scored, 408 medals, 0 mismatches
+400 cases, 6400 days, 411 scored, 386 medals, 0 mismatches
+400 cases, 6400 days, 458 scored, 431 medals, 0 mismatches
+400 cases, 6400 days, 1121 scored, 1080 medals, 0 mismatches
+400 cases, 6400 days, 1052 scored, 1015 medals, 0 mismatches
+400 cases, 6400 days, 1124 scored, 1078 medals, 0 mismatches
+# Rank scheme (comparison) vs old app 3fc41f4
+400 cases, 6400 days, 438 scored, 407 medals, 0 mismatches
+400 cases, 6400 days, 1121 scored, 1020 medals, 0 mismatches

@@ -1,4 +1,8 @@
-"""Python port of Weather Wahine's scoring (index.html: settings, linzTides highs, analyse, rankDays).
+"""Python port of Weather Wahine's scoring (index.html: settings, linzTides highs, analyse, rankDays, medalFor).
+
+Medals: the live app uses score bands since PR #19 (merged 28 Nov 2026, commit 10cebbb): platinum 8-9, gold 6-7,
+silver 4-5, bronze 2-3. score_days(..., scheme="rank") still gives the old rank-based medals (top 4 of the 16 days,
+as at commit 3fc41f4) for comparison.
 
 Ported from the live code at commit 3fc41f4, not from the handover doc. Differences from the doc that the
 code makes explicit:
@@ -11,6 +15,13 @@ import json, re, datetime as dt
 
 MEDALS = ["platinum", "gold", "silver", "bronze"]
 BEST_SHOWN, MIN_SCORE = 4, 2
+
+
+def medal_for(score):
+    """Score band, as medalFor() in index.html."""
+    if score is None or score < MIN_SCORE:
+        return None
+    return "platinum" if score >= 8 else "gold" if score >= 6 else "silver" if score >= 4 else "bronze"
 
 LOCATIONS = {  # name: (lat, lon, harbour, hw offset min, lw offset min)
     "Huia Domain": (-37.003, 174.566, True, -13, -17), "Kaitarakihi": (-37.008, 174.583, True, -13, -17),
@@ -60,7 +71,7 @@ def linz_highs(events, hw):
         out.append((d.date().isoformat(), m % 1440, h))
     return out
 
-def score_days(weather, marine, highs, frm, to, min_temp):
+def score_days(weather, marine, highs, frm, to, min_temp, scheme="bands"):
     """weather/marine: Open-Meteo-shaped dicts. highs: list of (date, mins, height). Returns list of dicts."""
     f, t, mt = settings(frm, to, min_temp)
     d, wh = weather["daily"], weather.get("hourly")
@@ -95,6 +106,10 @@ def score_days(weather, marine, highs, frm, to, min_temp):
                      + (0 if wave is None else 1 if wave < 1.5 else -1 if wave >= 2.5 else 0))
         days.append(dict(date=date, score=score, medal=None, winTemp=win_temp, winRain=win_rain,
                          winCode=win_code, wave=wave, tide=[round(m) for m in in_win]))
+    if scheme == "bands":
+        for x in days:
+            x["medal"] = medal_for(x["score"])
+        return days
     ranked = sorted([(i, x) for i, x in enumerate(days) if x["score"] is not None and x["score"] >= MIN_SCORE],
                     key=lambda p: (-p[1]["score"], p[0]))
     for k, (_, x) in enumerate(ranked[:BEST_SHOWN]):

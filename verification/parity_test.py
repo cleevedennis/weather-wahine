@@ -1,7 +1,7 @@
 """Fuzz parity: Python port vs the real index.html scoring (via node app_harness.js). Exit 1 on any mismatch."""
 import json, random, subprocess, sys, datetime as dt
 from ww_score import LOCATIONS, load_linz, linz_highs, score_days
-REPO = ".."; random.seed(int(sys.argv[1]) if len(sys.argv) > 1 else 1)
+import os; REPO = os.environ.get("REPO", ".."); SCHEME = os.environ.get("SCHEME", "bands"); random.seed(int(sys.argv[1]) if len(sys.argv) > 1 else 1)
 EV = load_linz(f"{REPO}/tides-data.js")
 CODES = [0, 1, 2, 3, 45, 48, 51, 53, 61, 63, 65, 71, 80, 82, 95, 99, 7] + ([0, 1, 2, 3] * 12 if __import__("os").environ.get("FINE") else [])
 EDGE_T = lambda mt: random.choice([mt, mt - 0.1, mt - 3, mt - 3.1, mt - 6, mt - 6.1, mt + 2, random.uniform(mt - 9, mt + 5)])
@@ -41,7 +41,7 @@ cases = [case() for _ in range(N)]
 js = json.loads(subprocess.run(["node", "app_harness.js", REPO], input=json.dumps(cases), capture_output=True, text=True, check=True).stdout)
 bad = days_n = scored = medals = 0
 for c, jd in zip(cases, js):
-    pd = score_days(c["weather"], c["marine"], linz_highs(EV, c["hw"]), c["from"], c["to"], c["minTemp"])
+    pd = score_days(c["weather"], c["marine"], linz_highs(EV, c["hw"]), c["from"], c["to"], c["minTemp"], SCHEME)
     for a, b in zip(pd, jd):
         days_n += 1; scored += a["score"] is not None; medals += a["medal"] is not None
         if any(a[k] != b[k] for k in ("date", "score", "medal", "tide", "winCode", "winRain", "wave")) or abs((a["winTemp"] or 0) - (b["winTemp"] or 0)) > 1e-9:
