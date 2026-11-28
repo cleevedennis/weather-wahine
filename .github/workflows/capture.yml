@@ -1,0 +1,43 @@
+# Daily forecast capture for the verification study: saves what the app would show each morning
+# to the forecast-captures branch. Touches nothing the site serves; never deploys.
+name: Capture forecasts
+
+on:
+  schedule:
+    - cron: "47 17 * * *"   # 6:47am NZDT / 5:47am NZST
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: capture
+  cancel-in-progress: false
+
+jobs:
+  capture:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Fetch every beach's forecast exactly as the app does
+        run: node tools/capture_forecasts.mjs out
+      - name: Append to the forecast-captures branch
+        run: |
+          git config user.name "capture-bot"
+          git config user.email "capture-bot@users.noreply.github.com"
+          if git fetch --depth=1 origin forecast-captures; then
+            git worktree add store FETCH_HEAD
+            git -C store switch -c forecast-captures
+          else
+            git worktree add --orphan -b forecast-captures store
+          fi
+          cp -r out/. store/
+          cd store
+          git add -A
+          git diff --cached --quiet && { echo "Nothing new"; exit 0; }
+          git commit -m "Forecast capture $(date -u +%Y-%m-%dT%H:%MZ)"
+          git push origin HEAD:forecast-captures
