@@ -118,17 +118,7 @@ The visual spec lives on a Design canvas: https://claude.ai/artifact/2gEM26bXS87
 the `/canvas-ship` skill (`.claude/skills/canvas-ship/`), which translates each change into a small PR; the canvas's
 sample data and markup are never copied into the app.
 
-**Canvas baseline:** version `1795854648-e189` (audited 2026-11-28).
+**Canvas baseline:** version `1795864245-6a8c` (synced to the live app 2026-11-28; the Medal days switch works in
+Play). The canvas uses the same icons and wording as the app. Its scores and stats are sample data.
 
-Icons are stroked line SVGs (`ICON` in `index.html`), as on the canvas; no emoji anywhere on the page. Card
-headings carry no icon.
-
-Known differences (decided 2026-11-28: the app is right; the canvas is being synced to match):
-- Medal days: canvas shows one row per day under its best medal with "+N more"; the app defaults to **All** (one row
-  per beach-day) with an All | Best per day switch (shipped in PR 19 after the canvas was drawn).
-- Tournament key: canvas says "Tide fits, weather out"; the app says "High tide fits, no medal".
-- Medal days intro: canvas "Each day sits under its best medal at any beach. Stats are for the top beach."; the app
-  "Every beach that earns a medal, day by day, on high tide 11am–4pm."
-- Counts: canvas "N medal days" / "N days"; the app "N medals". Status line: canvas "8 beaches · updated 9:02am";
-  the app "Updated 9:02am".
-- The canvas leaves out the footer (data credits, LINZ note); the app keeps it.
+Known differences (the app is right; don't flag these in a diff): none.
