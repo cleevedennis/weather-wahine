@@ -24,7 +24,9 @@ shorten names this long on the Home Screen (e.g. "Weather Wa…"); a shorter `sh
 | `--kokowai` | `#d9734a` | Red ochre: motifs, tide-window shading, primary button |
 | `--tide` | `#6fd6cf` | Tide dots, chips and curve |
 | `--sun` | `#f2c94c` | Kōwhai yellow: sunny dots and chips |
-| `--both` | `#ef8d5f` | ★ Tide & sun outline and chips |
+| `--both` | `#ef8d5f` | Medal badge in the top section |
+| `--rain` / `--swell` | `#9cc8f0` / `#c3b6f2` | Rain and Swell column labels |
+| `--platinum` `--gold` `--silver` `--bronze` | `#e4ebee` `#e8bd4f` `#aeb8bf` `#d9925e` | Medal tags |
 | `--muted` | `rgba(255,255,255,.82)` | Secondary text (meets contrast) |
 
 Sky gradients by the selected day's window weather (`body[data-sky]`):
@@ -38,6 +40,21 @@ Sky gradients by the selected day's window weather (`body[data-sky]`):
 | storm | `#091210` → `#26332e` |
 
 Warnings use a deep red badge (`rgba(160,30,20,.65)`) and `#ffb8a3` text.
+
+## Day rows (the standard list item)
+
+Every list of days uses one row layout (`dayRow()` in `index.html`), so the page reads as one system:
+
+| Part | Detail |
+|---|---|
+| Day | "Thursday, 10 Dec" ("Today, 28 Nov"); below 380px wide, "Thu, 10 Dec" |
+| Medal tag | Its own line under the day: a thin outlined pill in the medal colour, upper-case (PLATINUM, GOLD, SILVER, BRONZE). Only ranked days have one |
+| Columns | Weather icon · Tide (first high in window, "—" if none) · Temp (window) · Rain (window) · Swell |
+| Column labels | Once per card, above the rows, coloured `--tide` / `--sun` / `--rain` / `--swell` |
+| Warnings | Swell 2.5 m+ turns the value coral (`#ffb8a3`); no extra warning lines |
+| Selected day | Day text underlined |
+
+New lists of days should reuse this row rather than adding a new layout.
 
 ## Māori motifs
 
@@ -57,7 +74,6 @@ Chosen as general, widely shared motifs. Sacred or personal forms (e.g. tā moko
 |---|---|---|
 | Ngā rā pai · Best days | the good days | |
 | Te tai · Tide | the tide / sea | |
-| Maramataka · Calendar | calendar | Traditionally the Māori **lunar** calendar; often used for "calendar" generally — a speaker may prefer another word |
 | Matapae huarere · 16-day forecast | weather forecast | |
 | Tautuhinga · Settings | settings | |
 
@@ -74,6 +90,6 @@ reo part is shown.
 
 ## Wording principles
 
-- Say what a label actually means: "★ Tide & sun", not "Beach day" — it is not a swim-safety rating.
+- Say what a label actually means: medals rank the tide and weather; never "Beach day".
 - Always show where tide times come from (LINZ or model).
-- Keep safety guidance visible: swim between the flags, check Safeswim.
+- No swim-safety notices on the page: the users know these beaches and judge the surf on the day.

@@ -52,7 +52,7 @@ test.describe('offline', () => {
     await page.reload();
     await expect(page.locator('#status')).toContainText('Offline — showing the forecast saved');
     await expect(page.locator('#heroTemp')).toHaveText('22°');
-    await expect(page.locator('#list .row')).toHaveCount(16);
+    await expect(page.locator('#list .day-row')).toHaveCount(16);
 
     await context.setOffline(false); net.online = true;
     await page.reload();
@@ -72,6 +72,6 @@ test.describe('offline', () => {
     await page.reload();
     await expect(page.locator('#status')).toContainText('Offline');
     expect(await page.evaluate(() => state.days[0].date)).toBe('2026-11-26');
-    await expect(page.locator('#list .row')).toHaveCount(13);
+    await expect(page.locator('#list .day-row')).toHaveCount(13);
   });
 });

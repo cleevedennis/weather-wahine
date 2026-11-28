@@ -27,12 +27,13 @@ test('old saved beach index falls back to Piha', async ({ page }) => {
   await expect(page.locator('#loc')).toHaveValue('Piha');
 });
 
-test('tapping a calendar day or list row selects it', async ({ page }) => {
+test('tapping a best day or list row selects it', async ({ page }) => {
   await openPage(page);
-  await page.click('.cal .cell[data-i="5"]');
+  await page.click('#list .day-row[data-i="5"]');
   await expect(page.locator('#dayLabel')).not.toHaveText('Today');
-  await page.click('#list .row[data-i="2"]');
-  await expect(page.locator('.cal .cell.sel')).toHaveAttribute('data-i', '2');
+  await page.click('#best .day-row >> nth=0');
+  const i = await page.locator('#best .day-row').first().getAttribute('data-i');
+  await expect(page.locator('#list .day-row.sel')).toHaveAttribute('data-i', i);
 });
 
 test('resumed page refetches when data is over an hour old', async ({ page }) => {
@@ -53,9 +54,9 @@ for (const [name, status] of [['tide', 'marine'], ['weather', 'weather']]) {
 test('missing forecast days and tide gaps render without errors', async ({ page }) => {
   const m = marineSine(); for (let h = 30; h < 60; h++) m.hourly.sea_level_height_msl[h] = null;
   const { errors } = await openPage(page, { marine: m, weather: weatherDaily(16, (i) => (i > 9 ? { code: null, tmax: null, tmin: null, rain: null } : {})) });
-  await expect(page.locator('#list .row.skeleton')).toHaveCount(6);
-  await page.click('.cal .cell[data-i="1"]');
-  await page.click('.cal .cell[data-i="12"]');
+  await expect(page.locator('#list .day-row.skeleton')).toHaveCount(6);
+  await page.click('#list .day-row[data-i="1"]');
+  await page.click('#list .day-row[data-i="12"]');
   await expect(page.locator('#heroCond')).toHaveText('No forecast yet');
   expect(errors).toEqual([]);
 });
@@ -67,7 +68,7 @@ for (const [name, use] of [['iPhone SE', devices['iPhone SE']], ['Pixel 7', devi
     test(`no sideways scroll or clipped content (${name})`, async ({ page }) => {
       await openPage(page);
       const [sw, iw, clipped] = await page.evaluate(() => [document.documentElement.scrollWidth, window.innerWidth,
-        [...document.querySelectorAll('.card, .row, .cal .cell')].filter((e) => e.scrollWidth > e.clientWidth + 1).length]);
+        [...document.querySelectorAll('.card, .day-row')].filter((e) => e.scrollWidth > e.clientWidth + 1).length]);
       expect(sw).toBeLessThanOrEqual(iw);
       expect(clipped).toBe(0);
     });

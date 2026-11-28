@@ -27,11 +27,13 @@ Two things keep the gate deterministic:
 - High-tide times within 3 minutes on a known curve, including a tide just before midnight
 - Window edges: 11:00 and 4:00pm count; 4:06pm and 10:54am don't
 - Daily fallback: exactly 22° and 39% rain count; 21.9°, overcast and 40% rain don't
-- Best days: next 4 qualifying days in date order (rainy day skipped, "Next 4 of N"); fewer than 4 shows a note
+- Best days: top 4 by score, best first, tagged Platinum/Gold/Silver/Bronze ("Top 4 of N", rainy day out); fewer
+  than 4 shows just those
+- Medal scoring: known inputs give the expected points; rain or too-cold days are out
 - Hourly window: early drizzle with a clear window → sunny; drizzle at 1pm → not; warm only at 5pm → not
 - Settings: re-filtering, reversed window swapped, empty values fall back, no "NaN"
 - Swell ≥ 2.5 m flagged in hero, list and on selection; 1.1 m not
-- Safety wording: no "Beach day"; Safeswim link present
+- Wording: no "Beach day"; no swim-safety notice; no calendar card
 
 **LINZ** (`tests/linz.spec.js`)
 - Without offsets: coast beaches use the model; picker grouped Manukau Harbour / West Coast
@@ -51,7 +53,7 @@ Two things keep the gate deterministic:
 
 **UI** (`tests/ui.spec.js`)
 - All beaches load distinct coordinates; beach persists by name; old index-based saves fall back to Piha
-- Tapping calendar days and list rows selects them
+- Tapping Best days and list rows selects them
 - Resumed page re-fetches when data is over an hour old
 - Tide / weather service down → friendly error
 - Missing forecast days and tide gaps render without errors

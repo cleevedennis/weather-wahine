@@ -3,6 +3,15 @@
 ## Unreleased
 
 ### Changed
+- **Best days are now ranked** platinum, gold, silver and bronze — the 4 best days in the forecast, best first. Each
+  day with a high tide in your window scores up to 9 points on sky, warmth against your minimum temperature, rain
+  chance, how central the tide is, and swell (light weighting). Near-misses (a little cooler, some cloud) now rank
+  instead of disappearing.
+- **One row layout for the whole page**: Best days and the 16-day forecast share the same row — day and date, medal
+  tag, weather icon, tide, temp, rain and a new swell column — with column labels shown once per card.
+- **Calendar card removed**; the 16-day list (with medal tags) replaces it.
+- Removed the "Only N days line up" note and the swim-safety notice from Best days; big swell is now shown in coral in
+  the swell column instead of a warning line.
 - **Best days panel redesigned** as a scorecard: the next 4 qualifying days in date order, each showing tide time,
   temperature and rain chance, with the rules listed at the top.
 - Rain rule is now a fixed "under 40%" (was a setting defaulting to 30% or less); the Max rain chance setting is gone.
