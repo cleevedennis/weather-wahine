@@ -110,3 +110,23 @@ reo part is shown.
 - Say what a label actually means: medals rank the tide and weather; never "Beach day".
 - Always show where tide times come from (LINZ or model).
 - No swim-safety notices on the page: the users know these beaches and judge the surf on the day.
+
+## Design canvas
+
+The visual spec lives on a Design canvas: https://claude.ai/artifact/2gEM26bXS872U5tdesbnKo (artboard
+`project/Main.dc.html`, the All beaches view at 390 px; private to the owner). Edits made there reach the app through
+the `/canvas-ship` skill (`.claude/skills/canvas-ship/`), which translates each change into a small PR; the canvas's
+sample data and markup are never copied into the app.
+
+**Canvas baseline:** version `1795854648-e189` (audited 2026-11-28).
+
+Differences found in the first audit (canvas vs app), pending a decision on each:
+- Weather icons: canvas uses line icons; the app uses emoji (rows, hero chips and card headings).
+- Medal days: canvas shows one row per day under its best medal with "+N more"; the app defaults to **All** (one row
+  per beach-day) with an All | Best per day switch (shipped in PR 19 after the canvas was drawn).
+- Tournament key: canvas says "Tide fits, weather out"; the app says "High tide fits, no medal".
+- Medal days intro: canvas "Each day sits under its best medal at any beach. Stats are for the top beach."; the app
+  "Every beach that earns a medal, day by day, on high tide 11am–4pm."
+- Counts: canvas "N medal days" / "N days"; the app "N medals". Status line: canvas "8 beaches · updated 9:02am";
+  the app "Updated 9:02am".
+- The canvas leaves out the footer (data credits, LINZ note); the app keeps it.
