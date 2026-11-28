@@ -1,0 +1,104 @@
+gfs_prev_2024-12.json 200
+bestmatch_prev_2024-12.json 200
+era5_2024-12.json 200
+marine_2024-12.json 200
+gfs_prev_2025-01.json 200
+bestmatch_prev_2025-01.json 200
+era5_2025-01.json 200
+marine_2025-01.json 200
+gfs_prev_2025-02.json 200
+bestmatch_prev_2025-02.json 200
+era5_2025-02.json 200
+marine_2025-02.json 200
+gfs_prev_2025-12.json 200
+bestmatch_prev_2025-12.json 200
+era5_2025-12.json 200
+marine_2025-12.json 200
+gfs_prev_2026-01.json 200
+bestmatch_prev_2026-01.json 200
+era5_2026-01.json 200
+marine_2026-01.json 200
+gfs_prev_2026-02.json 200
+bestmatch_prev_2026-02.json 200
+era5_2026-02.json 200
+marine_2026-02.json 200
+clim_era5_2010.json 200
+clim_era5_2011.json 200
+clim_era5_2012.json 200
+clim_era5_2013.json 200
+clim_era5_2014.json 200
+clim_era5_2015.json 200
+clim_era5_2016.json 200
+clim_era5_2017.json 200
+clim_era5_2018.json 200
+clim_era5_2019.json 200
+clim_era5_2020.json 200
+clim_era5_2021.json 200
+clim_era5_2022.json 200
+clim_era5_2023.json 200
+linz_onehunga_2024.csv 200
+linz_onehunga_2025.csv 200
+ea_probe_0.txt 200
+ea_probe_1.txt 200
+ea_probe_2.txt 200
+ea_probe_3.txt 401
+ea_probe_4.txt 200
+ea_probe_5.txt 200
+gfs_prev_2024-12.json 200 166962
+bestmatch_prev_2024-12.json 200 87663
+era5_2024-12.json 200 32501
+marine_2024-12.json 200 18134
+gfs_prev_2025-01.json 200 161117
+bestmatch_prev_2025-01.json 200 86406
+era5_2025-01.json ERR URLError(TimeoutError('_ssl.c:1063: The handshake operation timed out'))
+era5_2025-01.json 200 32345
+marine_2025-01.json 200 18135
+gfs_prev_2025-02.json 200 143228
+bestmatch_prev_2025-02.json 200 77794
+era5_2025-02.json 200 29026
+marine_2025-02.json 200 16407
+gfs_prev_2025-12.json ERR URLError(TimeoutError('_ssl.c:1063: The handshake operation timed out'))
+gfs_prev_2025-12.json 200 162141
+bestmatch_prev_2025-12.json 200 87643
+era5_2025-12.json 200 32429
+marine_2025-12.json 200 18134
+gfs_prev_2026-01.json ERR TimeoutError('The read operation timed out')
+gfs_prev_2026-01.json 200 161658
+bestmatch_prev_2026-01.json 200 87835
+era5_2026-01.json 200 32483
+marine_2026-01.json 200 18134
+gfs_prev_2026-02.json 200 145542
+bestmatch_prev_2026-02.json 200 78819
+era5_2026-02.json 200 29331
+marine_2026-02.json 200 16407
+clim_era5_2010.json 200 69784
+clim_era5_2011.json ERR URLError(TimeoutError('_ssl.c:1063: The handshake operation timed out'))
+clim_era5_2011.json 200 69872
+clim_era5_2012.json 200 69465
+clim_era5_2013.json 200 69428
+clim_era5_2014.json ERR URLError(TimeoutError('_ssl.c:1063: The handshake operation timed out'))
+clim_era5_2014.json 200 69543
+clim_era5_2015.json 200 69615
+clim_era5_2016.json 200 69662
+clim_era5_2017.json 200 69646
+clim_era5_2018.json 200 69509
+clim_era5_2019.json ERR URLError(TimeoutError('_ssl.c:1063: The handshake operation timed out'))
+clim_era5_2019.json 200 69421
+clim_era5_2020.json 200 69578
+clim_era5_2021.json ERR URLError(TimeoutError('_ssl.c:1063: The handshake operation timed out'))
+clim_era5_2021.json 200 70037
+clim_era5_2022.json 200 70310
+clim_era5_2023.json ERR URLError(TimeoutError('_ssl.c:1063: The handshake operation timed out'))
+clim_era5_2023.json 200 69920
+linz_onehunga_2024.csv 200 19538
+linz_onehunga_2025.csv 200 19492
+ea_probe_0.txt 200 29807
+ea_probe_1.txt 200 0
+ea_probe_2.txt 200 29807
+ea_probe_3.txt 401 <!DOCTYPE html>
+<html lang="en" style="font-size:16px;">
+<head>
+    <meta charset="utf-8" />
+    <title>No Access - 
+ea_probe_4.txt 200 29845
+ea_probe_5.txt 200 29807
