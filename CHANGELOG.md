@@ -2,6 +2,11 @@
 
 ## Unreleased
 
+### Added
+- **Daily forecast capture** (`.github/workflows/capture.yml`, `tools/capture_forecasts.mjs`): each morning at about
+  6:47am NZDT, saves the exact Open-Meteo responses the app fetches for every beach to the `forecast-captures`
+  branch, so medal days can later be checked against what happened. No change to the site.
+
 ### Changed
 - **Add to calendar** now exports the 4 medal days (e.g. "★ Gold · High tide 1:12pm · 22°C · 5% rain · 1.1 m swell"),
   matching Best days; sunny-only all-day events are gone.
