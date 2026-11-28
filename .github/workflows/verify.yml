@@ -1,0 +1,37 @@
+# Forecast-verification study (branch only; never merged without approval, never deploys).
+# Runs verification/run.sh on each push to a verify/* branch and commits its outputs back to that branch.
+name: Verify forecasts
+
+on:
+  push:
+    branches: ["verify/**"]
+    paths: ["verification/**", ".github/workflows/verify.yml"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: verify-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 22
+      - name: Run the study step
+        run: bash verification/run.sh
+      - name: Commit outputs back to this branch
+        run: |
+          git config user.name "verify-bot"
+          git config user.email "verify-bot@users.noreply.github.com"
+          git add -A verification
+          git diff --cached --quiet && { echo "No new outputs"; exit 0; }
+          git commit -m "verification: outputs from run ${{ github.run_id }}"
+          git pull --rebase origin "${GITHUB_REF_NAME}"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
