@@ -7,6 +7,9 @@
   **Tournament** grid shows each beach's medals over 16 days (tap a dot to open that beach on that day); and
   **Medal days** lists every day that earns a medal anywhere, grouped by its best medal, in place of the 16-day list.
   All beaches load in two requests, and picking a beach afterwards needs no new request.
+- **Daily forecast capture** (`.github/workflows/capture.yml`, `tools/capture_forecasts.mjs`): each morning at about
+  6:47am NZDT, saves the exact Open-Meteo responses the app fetches for every beach to the `forecast-captures`
+  branch, so medal days can later be checked against what happened. No change to the site.
 
 ### Changed
 - **Medals are now score bands**, the same on every screen: platinum 8–9 points, gold 6–7, silver 4–5, bronze 2–3.
