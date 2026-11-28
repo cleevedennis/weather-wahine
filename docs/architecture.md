@@ -57,14 +57,14 @@ For each forecast date:
 | `highs` | High tides on that date |
 | `inWindow` / `tide` | Highs with `from ≤ time ≤ to` (both ends inclusive) |
 | `hasTide` | At least 80% of the day's tide curve is available |
-| Window hours | Hours that overlap the window: an hour starting at `m` counts if `m + 59 ≥ from` and `m ≤ to` (11:00–15:00 → 11am…3pm hours) |
+| Window hours | Hours that overlap the window: an hour starting at `m` counts if `m + 59 ≥ from` and `m ≤ to` (11:00–16:00 → 11am…4pm hours) |
 | `winCode`, `winTemp`, `winRain` | Worst weather code, warmest temperature and highest rain chance in the window hours |
 | `hourly` | Whether hourly data was available; if not, the daily summary is used instead |
 | `sunny` | `winCode ≤ 2` and `winTemp ≥ minTemp` and (`winRain` missing or `≤ maxRain`) |
 | `wave` / `bigSwell` | Highest wave height in the window; `bigSwell` when `≥ BIG_SWELL_M` |
 | `both` | `tide && sunny` (shown as ★ Tide & sun) |
 
-`settings()` reads the inputs with fallbacks (11:00, 15:00, 20, 30) and swaps a reversed window.
+`settings()` reads the inputs with fallbacks (11:00, 16:00, 22, 30) and swaps a reversed window.
 
 ## Configuration (top of the script)
 

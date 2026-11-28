@@ -16,8 +16,8 @@ The tide card says which source is in use, e.g. *"Official LINZ prediction (Oneh
 
 | Setting | Default | Meaning |
 |---|---|---|
-| High tide from / until | 11:00 – 15:00 | A high tide must fall inside this window. Both ends count. If "from" is later than "until" they're swapped. |
-| Minimum temp (°C) | 20 | The warmest hour inside the window must reach this. |
+| High tide from / until | 11:00 – 16:00 | A high tide must fall inside this window. Both ends count. If "from" is later than "until" they're swapped. |
+| Minimum temp (°C) | 22 | The warmest hour inside the window must reach this. |
 | Max rain chance (%) | 30 | The highest hourly rain chance inside the window must not exceed this. |
 
 Empty or invalid entries fall back to the defaults. Settings are remembered on that device.
@@ -25,7 +25,7 @@ Empty or invalid entries fall back to the defaults. Settings are remembered on t
 ## Reading the screen
 
 - **Top section** — the selected day (tap any day to change it): high temperature, the weather **during your window**
-  (labelled e.g. "11am–3pm"), high/low for the day, and badges for ★ Tide & sun, high-tide time, rain chance,
+  (labelled e.g. "11am–4pm"), high/low for the day, and badges for ★ Tide & sun, high-tide time, rain chance,
   swell height and UV. A red **⚠️ Big swell** badge appears at 2.5 m+.
 - **★ Ngā rā pai · Best days** — every day with both a high tide in your window and sunny weather, plus a safety note.
   If the tide source doesn't cover all 16 days, a note says when tide data ends.

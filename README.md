@@ -2,8 +2,8 @@
 
 A single-page calendar for West Auckland's West Coast beaches that shows, for the next 16 days:
 
-- 🌊 **High tides inside your window** (default 11am–3pm)
-- ☀️ **Sunny, warm weather during that window** (default 20°C+, rain chance 30% or less)
+- 🌊 **High tides inside your window** (default 11am–4pm)
+- ☀️ **Sunny, warm weather during that window** (default 22°C+, rain chance 30% or less)
 - ★ **"Tide & sun" days** when both line up
 - ⚠️ **Big swell warnings** (2.5 m+ waves)
 

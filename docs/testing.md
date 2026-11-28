@@ -25,8 +25,8 @@ Two things keep the gate deterministic:
 
 **Logic** (`tests/logic.spec.js`)
 - High-tide times within 3 minutes on a known curve, including a tide just before midnight
-- Window edges: 11:00 and 3:00pm count; 3:06pm and 10:54am don't
-- Daily fallback: exactly 20° counts; 19.9°, overcast and 31% rain don't
+- Window edges: 11:00 and 4:00pm count; 4:06pm and 10:54am don't
+- Daily fallback: exactly 22° counts; 21.9°, overcast and 31% rain don't
 - Hourly window: early drizzle with a clear window → sunny; drizzle at 1pm → not; warm only at 5pm → not
 - Settings: re-filtering, reversed window swapped, empty values fall back, no "NaN"
 - Swell ≥ 2.5 m flagged in hero, list and on selection; 1.1 m not
