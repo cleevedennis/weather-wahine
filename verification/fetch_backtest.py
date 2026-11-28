@@ -10,7 +10,15 @@ MONTHS = [("2024-12-01", "2024-12-31"), ("2025-01-01", "2025-01-31"), ("2025-02-
           ("2025-12-01", "2025-12-31"), ("2026-01-01", "2026-01-31"), ("2026-02-01", "2026-02-28")]
 log = []
 
-def get(name, url, timeout=180, tries=3):
+def save_log():
+    json.dump(log, open(os.path.join(RAW, "_fetch_log.json"), "w"), indent=1)
+
+def get(name, url, timeout=120, tries=2):
+    try: _get(name, url, timeout, tries)
+    finally:
+        save_log(); print(name, log[-1][1] if log else '', flush=True)
+
+def _get(name, url, timeout, tries):
     path = os.path.join(RAW, name)
     if os.path.exists(path): return
     for k in range(tries):
@@ -32,7 +40,7 @@ for a, b in MONTHS:
     get(f"gfs_prev_{a[:7]}.json", f"https://previous-runs-api.open-meteo.com/v1/forecast?{BASE}&{D}&models=gfs_seamless"
         f"&hourly={lead(GFS_VARS)},precipitation_probability")
     get(f"bestmatch_prev_{a[:7]}.json", f"https://previous-runs-api.open-meteo.com/v1/forecast?{BASE}&{D}"
-        f"&hourly={lead(['weather_code', 'temperature_2m', 'precipitation_probability'])}", timeout=300)
+        f"&hourly={lead(['weather_code', 'temperature_2m', 'precipitation_probability'])}", timeout=90, tries=1)
     get(f"era5_{a[:7]}.json", f"https://archive-api.open-meteo.com/v1/archive?{BASE}&{D}"
         "&hourly=temperature_2m,precipitation,cloud_cover,wind_speed_10m,wind_direction_10m,weather_code")
     get(f"marine_{a[:7]}.json", f"https://marine-api.open-meteo.com/v1/marine?{BASE}&{D}&hourly=wave_height&cell_selection=sea")
