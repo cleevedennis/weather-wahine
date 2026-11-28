@@ -2,10 +2,10 @@
 
 ## All beaches (the opening screen)
 
-The app always opens on **🏆 All beaches**, comparing every beach over the next 16 days:
+The app always opens on **All beaches**, comparing every beach over the next 16 days:
 
 - **Top section — Champion day:** the best beach-day in the forecast, with the beaches that share its medal.
-- **🏆 Te whakataetae · Tournament:** a grid of beaches × days. A filled dot is a medal (platinum, gold, silver,
+- **Te whakataetae · Tournament:** a grid of beaches × days. A filled dot is a medal (platinum, gold, silver,
   bronze); a hollow ring means the high tide fits but the weather earns no medal; a faint speck means no high tide in
   your window. Tap a dot to open that beach on that day.
 - **★ Ngā rā pai · Medal days:** grouped by medal and listed by date. Two views:
