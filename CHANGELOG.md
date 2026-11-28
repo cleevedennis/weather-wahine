@@ -3,6 +3,10 @@
 ## Unreleased
 
 ### Added
+- **Canvas → PR workflow (no change to the site).** `/canvas-ship` turns edits on the Design canvas into small PRs
+  through the `/tweak` pipeline, with a phone-size screenshot tool (`tools/canvas/`); `/decision-modal` puts every
+  decision to the user as decision, summary, accept/decline. `docs/design.md` records the canvas baseline and the
+  first audit's differences.
 - **All beaches view, the new opening screen.** The top section shows the champion day across every beach; a
   **Tournament** grid shows each beach's medals over 16 days (tap a dot to open that beach on that day); and
   **Medal days** replaces the 16-day list, grouped by medal, with a switch between **All** (every beach that earns a
